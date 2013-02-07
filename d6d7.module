@@ -8,6 +8,8 @@
 
 /**
  * Implements hook_flush_caches().
+ * This will register the migrations when the caches are flushed.
+ * However, it looks like this might also be possible through the UI
  */
 function d6d7_flush_caches() {
   d6d7_register_migrations();
@@ -22,6 +24,16 @@ function d6d7_register_migrations() {
    * and some optional. Start with the common arguments required by all - the
    * source_connection (connection key, set up in settings.php, pointing to
    * the Drupal 6 database) and source_version (major version of Drupal).
+   * The connection key should be added to the settings.php file.
+   * e.g.
+   * $databases['legacy']['default'] = array(
+   *   'driver' => 'mysql',
+   *   'database' => '',
+   *   'username' => '',
+   *   'password' => '',
+   *   'host' => '',
+   *   'prefix' => '',
+   * );
    */
   $common_arguments = array(
     'source_connection' => 'legacy',
@@ -56,47 +68,42 @@ function d6d7_register_migrations() {
   // first, we want to make sure it's listed first so the vocubularies are
   // listed right ahead of the node migrations.
   $common_vocabulary_arguments = $common_arguments + array(
-    'class_name' => 'DrupalTerm6Migration',
+    'class_name' => 'd6d7CatalogCategoriesMigration',
     'soft_dependencies' => array('User'),
   );
+
   foreach ($vocabulary_arguments as $arguments) {
     $arguments += $common_vocabulary_arguments;
     Migration::registerMigration($arguments['class_name'], $arguments['machine_name'],
                                  $arguments);
   }
 
-/*
   // Node migrations - each has its own class derived from the migrate_d2d class,
   // specifying its particular field mappings and transformations. source_type
   // and destination_type are required arguments.
   $node_arguments = array(
     array(
-      'class_name' => 'ExampleImageMigration',
-      'description' => t('Migration of image nodes from Drupal 6'),
-      'machine_name' => 'Image',
-      'source_type' => 'image',
-      'destination_type' => 'image',
-    ),
-    array(
-      'class_name' => 'ExampleArticleMigration',
-      'description' => t('Migration of article nodes from Drupal 6'),
-      'machine_name' => 'Article',
-      'source_type' => 'my_article',
-      'destination_type' => 'new_article',
-      'dependencies' => array('Image', 'Countries', 'Topics'),
+      'class_name' => 'd6d7CatalogEntryMigration',
+      'description' => t('Migration of Catalog Entries from Drupal 6'),
+      'machine_name' => 'CatalogEntry',
+      'source_type' => 'service',
+      'destination_type' => 'catalog_entry',
+//      'dependencies' => array('CatalogCategories',),
     ),
   );
+
   // Tell the node migrations where the users are coming from, so they can
   // set up the dependency and resolve D6->D7 uids.
   $common_node_arguments = $common_arguments + array(
-    'user_migration' => 'User',
+//    'user_migration' => 'User',
   );
+
   foreach ($node_arguments as $arguments) {
     $arguments = array_merge_recursive($arguments, $common_node_arguments);
     Migration::registerMigration($arguments['class_name'], $arguments['machine_name'],
                                  $arguments);
   }
-
+/*
   // Menu migrations -- same requirements as users
   $menu_arguments = $common_arguments + array(
     'description' => t('Migration of menus from Drupal 6'),

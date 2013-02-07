@@ -1,81 +1,57 @@
 <?php
 
 /**
- * Common mappings for the Drupal 6 node migrations.
+ * Common mappings for the Drupal 6 term migrations.
  */
-abstract class ExampleNodeMigration extends DrupalNode6Migration {
+
+abstract class d6d7TermMigration extends DrupalTerm6Migration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
-
-    $this->addFieldMapping('field_legacy_nid', 'nid')
-         ->description('We have a common field to save the D6 nid');
+    //$this->addFieldMapping('field_legacy_nid', 'nid')
+     //    ->description('We have a common field to save the D6 nid');
   }
 }
 
 /**
- * Image-specific mappings and handling.
+ * Catalog Categories specific mappings and handling.
  */
-class ExampleImageMigration extends ExampleNodeMigration {
+class d6d7CatalogCategoriesMigration extends d6d7TermMigration {
   public function __construct(array $arguments) {
-    // Add any other data we're pulling into the source row, before the parent
-    // constructor.
-    $this->sourceFields['copyright'] = 'Media copyright notice';
-    $this->sourceFields['filename'] = 'Path of image within mounted filesystem';
-
     parent::__construct($arguments);
 
-    $this->addFieldMapping('field_credit', 'copyright');
-    $arguments = array('source_path' => '/mnt/source_images');
-    $this->addFieldMapping('field_main_image', 'filename')
-         ->arguments($arguments);
+    $this->systemOfRecord = Migration::DESTINATION;
+    $this->addFieldMapping('tid', 'tid');
   }
 
-  /**
-   * Implementation of Migration::prepareRow().
-   *
-   * Here we pull in additional data from a non-core, non-CCK table.
-   *
-   * @param $row
-   */
-  public function prepareRow($row) {
-    if (parent::prepareRow($row) === FALSE) {
-      return FALSE;
+ public function preImport() {
+    parent::preImport();
+
+    $vocabs = taxonomy_vocabulary_get_names();
+
+    $vid = $vocabs[$this->destination->getBundle()]->vid;
+    $query = $this->query; // $this->termsQuery is set to the $query that I submitted as my source sql
+    $query = Database::getConnection('default', 'legacy')
+         ->select('term_data', 't')
+         ->fields('t', array('tid'))
+         ->condition('t.vid', 1, '=');
+    if ($this->getItemLimit()>0) {
+      $query->range(0, $this->getItemLimit());
     }
+    $results = $query->execute()->fetchAllAssoc('tid');
+    foreach ($results as $tid=>$result) {
+      if (!taxonomy_term_load($tid)) {
+        $term = new StdClass();
+        $term->tid = $tid;
+        $term->name = 'Stub term: ' . $tid;
+        $term->description = '';
+        $term->vid = $vid;
+        $status = drupal_write_record('taxonomy_term_data', $term);
 
-    $image_row = Database::getConnection('default', $this->sourceConnection)
-                 ->select('custom_image_table', 'i')
-                 ->fields('i', array('copyright', 'filename'))
-                 ->condition('vid', $row->vid)
-                 ->execute()
-                 ->fetchObject();
-    if ($image_row) {
-      $row->copyright = $image_row->copyright;
-      $row->filename = $image_row->filename;
+        db_merge('taxonomy_term_hierarchy')
+          ->key(array('tid' => $term->tid))
+          ->fields(array('tid' => $term->tid))
+          ->execute();
+      }
     }
-    else {
-      $this->saveMessage(t('No custom_image_table data for image node with vid !vid',
-                         array('!vid' => $row->vid)));
-    }
-  }
-}
-
-class ExampleArticleMigration extends ExampleNodeMigration {
-  public function __construct(array $arguments) {
-    // Add any other data we're pulling into the source row, before the parent
-    // constructor.
-    $this->sourceFields['lead_graphic'] = 'Lead graphic string from D6';
-    $this->sourceFields['summary'] = 'Summary string from D6';
-
-    parent::__construct($arguments);
-
-    $this->addFieldMapping('field_image', 'field_lead_graphic')
-         ->sourceMigration('Image');
-    // Note that we map migrated terms by the vocabulary ID.
-    $this->addFieldMapping('field_countries', '1')
-         ->sourceMigration('Countries')
-         ->arguments(array('source_type' => 'tid'));
-    $this->addFieldMapping('field_topics', '2')
-         ->sourceMigration('Topics')
-         ->arguments(array('source_type' => 'tid'));
   }
 }

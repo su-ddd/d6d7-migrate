@@ -8,4 +8,4 @@ dependencies[] = migrate
 dependencies[] = migrate_d2d
 
 files[] = term.inc
-;files[] = node.inc
+files[] = node.inc
