@@ -44,7 +44,6 @@ class d6d7CatalogEntryMigration extends d6d7NodeMigration {
   // is a new content type (for other nodes, we'll likely keep the same ID
   protected function calcID($value) {
     $value = $value + 10000;
-    drupal_set_message($value);
     return $value;
   }
 
