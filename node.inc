@@ -31,6 +31,10 @@ class d6d7CatalogEntryMigration extends d6d7NodeMigration {
 	// point to the service pages
     $this->removeFieldMapping('path');
 
+	// Map the catalog category to this field, and use the tid to make the match
+	$this->addFieldMapping('field_categories', 1);
+    $this->addFieldMapping('field_categories:source_type')->defaultValue('tid');
+
     // Map the node ID to the existing ID, but first pass it through the calcID function
     $this->addFieldMapping('nid', 'nid')->callbacks(array($this, 'calcID'));
     $this->addFieldMapping('is_new')->defaultValue('TRUE');
