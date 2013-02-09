@@ -51,13 +51,108 @@ class d6d7CatalogEntryMigration extends d6d7NodeMigration {
   protected function query() {
     $query = parent::query();
 
+    // Only import published nodes and those that are marked with the "Service Catalog" term
+    $query->join('term_node', 'td', 'n.vid = td.vid');
+    $query->condition('status', '1', '=');
+    $query->condition('td.tid', '49', '=');
+    return $query;
+  }
+}
+
+/**
+ * Catalog Entry mappings and handling
+ */
+class d6d7OfficialServiceMigration extends d6d7NodeMigration {
+  public function __construct(array $arguments) {
+    parent::__construct($arguments);
+
+    // Map the IT division - a simple text list
+    $this->addFieldMapping('field_it_services_division', 'field_service_department');
+
+    // Map the various owners
+    $this->addFieldMapping('field_owner',            'field_service_business_owner');
+    $this->addFieldMapping('field_service_owner',    'field_service_technical_owner');
+    $this->addFieldMapping('field_operations_owner', 'field_service_operations_owner');
+    $this->addFieldMapping('field_service_manager',  'field_service_manager');
+
+    // TODO: Map the service page
+    $this->addFieldMapping('field_service_page','nid');
+
+    // Map the node ID to the existing ID, but first pass it through the calcID function
+    $this->addFieldMapping('nid', 'nid')->callbacks(array($this, 'calcID'));
+    $this->addFieldMapping('is_new')->defaultValue('TRUE');
+  }
+
+  // This function adds 20000 to the node ID to avoid conflicts since this
+  // is a new content type (for other nodes, we'll likely keep the same ID
+  protected function calcID($value) {
+    $value = $value + 20000;
+    return $value;
+  }
+
+  // modify the source query
+  protected function query() {
+    $query = parent::query();
+
     // Only import published nodes
-	// TODO: add a condition to only import nodes published in the catalog
     $query->condition('status', '1', '=');
     return $query;
   }
 }
-  /**
+
+/**
+ * Catalog Entry mappings and handling
+ */
+class d6d7ServicePageMigration extends d6d7NodeMigration {
+  public function __construct(array $arguments) {
+    parent::__construct($arguments);
+
+    // Overview
+    $this->addFieldMapping('field_overview', 'field_service_introduction');
+    $this->addFieldMapping('field_overview:format')->defaultValue('full_html');
+
+    // Body
+    $this->addFieldMapping('body', 'merged_features');
+    $this->addFieldMapping('body:format')->defaultValue('full_html');
+ 
+    // Getting Started
+    $this->addFieldMapping('field_getting_started', 'merged_getting_started');
+    $this->addFieldMapping('field_getting_started:format')->defaultValue('full_html');
+
+    // Create a node with the same ID
+    $this->addFieldMapping('nid', 'nid');
+    $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+    // Unmapped destination fields
+    $this->addFieldMapping('body:summary', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+    $this->addFieldMapping('field_overview:language', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+    $this->addFieldMapping('field_getting_started:language', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+
+    // Unmapped source fields
+    $this->addFieldMapping(NULL, 'field_service_acq_summary')->issueGroup(t('DNM'))->description(t('Merged'));
+    $this->addFieldMapping(NULL, 'field_service_acq_details')->issueGroup(t('DNM'))->description(t('Merged'));
+    $this->addFieldMapping(NULL, 'field_service_acq_summary:format')->issueGroup(t('DNM'))->description(t('Ignored'));
+    $this->addFieldMapping(NULL, 'field_service_acq_details:format')->issueGroup(t('DNM'))->description(t('Ignored'));
+    $this->addFieldMapping(NULL, 'field_service_introduction:format')->issueGroup(t('DNM'))->description(t('Ignored'));
+  }
+
+  // modify the source query
+  protected function query() {
+    $query = parent::query();
+
+    // Only import published nodes
+    $query->condition('status', '1', '=');
+
+    // Join summary / details fields
+    // See: http://drupal.org/node/1012810
+    $query->addExpression('CONCAT_WS(\'\',f.field_service_acq_summary_value, f.field_service_acq_details_value)', 'merged_getting_started');
+    $query->addExpression('CONCAT_WS(\'\',f.field_service_features_summary_value, f.field_service_features_details_value)', 'merged_features');
+
+    return $query;
+  }
+}
+
+/**
    * Implementation of Migration::prepareRow().
    *
    * Here we pull in additional data from a non-core, non-CCK table.
@@ -65,16 +160,7 @@ class d6d7CatalogEntryMigration extends d6d7NodeMigration {
    * @param $row
    */
 /*
-  public function prepareRow($row) {
-    if (parent::prepareRow($row) === FALSE) {
-      return FALSE;
-    }
-
-    $image_row = Database::getConnection('default', $this->sourceConnection)
-                 ->select('custom_image_table', 'i')
-                 ->fields('i', array('copyright', 'filename'))
-                 ->condition('vid', $row->vid)
-                 ->execute()
+  public function prepareRow($row) { if (parent::prepareRow($row) === FALSE) { return FALSE; } $image_row = Database::getConnection('default', $this->sourceConnection) ->select('custom_image_table', 'i') ->fields('i', array('copyright', 'filename')) ->condition('vid', $row->vid) ->execute()
                  ->fetchObject();
     if ($image_row) {
       $row->copyright = $image_row->copyright;

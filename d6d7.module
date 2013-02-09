@@ -48,7 +48,7 @@ function d6d7_register_migrations() {
   );
 
   // We just use the migrate_d2d D6 migration class as-is.
-  Migration::registerMigration('DrupalUser6Migration', $arguments['machine_name'],
+  Migration::registerMigration('d6d7WebAuthUserMigration', $arguments['machine_name'],
                                $arguments);
 
   // For vocabulary migrations, source_vocabulary and destination_vocabulary are
@@ -89,6 +89,20 @@ function d6d7_register_migrations() {
       'source_type' => 'service',
       'destination_type' => 'catalog_entry',
 //      'dependencies' => array('CatalogCategories',),
+    ),
+	array(
+	  'class_name' => 'd6d7OfficialServiceMigration',
+	  'description' => t('Migration of Official Service Data'),
+	  'machine_name' => 'OfficialService',
+	  'source_type' => 'service',
+	  'destination_type' => 'official_its_service',
+    ),
+	array(
+	  'class_name' => 'd6d7ServicePageMigration',
+	  'description' => t('Migration of Official Service Data'),
+	  'machine_name' => 'ServicePage',
+	  'source_type' => 'service',
+	  'destination_type' => 'service_page',
     ),
   );
 
