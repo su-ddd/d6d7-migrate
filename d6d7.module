@@ -40,16 +40,36 @@ function d6d7_register_migrations() {
     'source_version' => 6,
   );
 
-  // The description and the migration machine name are also required arguments,
-  // which will be unique for each migration you register.
-  $arguments = $common_arguments + array(
-    'description' => t('Migration of users from Drupal 6'),
-    'machine_name' => 'User',
+  $user_arguments = array(
+    array(
+      'class_name' => 'd6d7BusinessOwnerMigration',
+      'description' => t('Migration of Business Owners'),
+      'machine_name' => 'BusinessOwner',
+    ),
+    array(
+      'class_name' => 'd6d7TechnicalOwnerMigration',
+      'description' => t('Migration of Technical Owners'),
+      'machine_name' => 'TechnicalOwner',
+    ),
+    array(
+      'class_name' => 'd6d7ServiceManagerMigration',
+      'description' => t('Migration of Service Managers'),
+      'machine_name' => 'ServiceManager',
+    ),
+    array(
+      'class_name' => 'd6d7OperationsOwnerMigration',
+      'description' => t('Migration of OperationsOwners'),
+      'machine_name' => 'OperationsOwner',
+    ),
   );
 
-  // We just use the migrate_d2d D6 migration class as-is.
-  Migration::registerMigration('d6d7WebAuthUserMigration', $arguments['machine_name'],
-                               $arguments);
+  foreach ($user_arguments as $arguments) {
+    $arguments = array_merge_recursive($arguments, $common_arguments);
+    Migration::registerMigration($arguments['class_name'], $arguments['machine_name'], $arguments);
+  }
+
+  //  Migration::registerMigration('d6d7WebAuthUserMigration', $arguments['machine_name'],
+  //                              $arguments);
 
   // For vocabulary migrations, source_vocabulary and destination_vocabulary are
   // required arguments. Note that in Drupal 6 vocabularies did not have machine
@@ -69,7 +89,7 @@ function d6d7_register_migrations() {
   // listed right ahead of the node migrations.
   $common_vocabulary_arguments = $common_arguments + array(
     'class_name' => 'd6d7CatalogCategoriesMigration',
-    'soft_dependencies' => array('User'),
+//    'soft_dependencies' => array('User'),
   );
 
   foreach ($vocabulary_arguments as $arguments) {
