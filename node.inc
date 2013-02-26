@@ -123,9 +123,50 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
 	$this->addFieldMapping('field_service_information', 'merged_service_information');
     $this->addFieldMapping('field_service_information:format')->defaultValue('full_html');
 
+    // Notice
+	$this->addFieldMapping('field_notice', 'merged_notice');
+    $this->addFieldMapping('field_notice:format')->defaultValue('full_html');
+
     // Create a node with the same ID
     $this->addFieldMapping('nid', 'nid');
     $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+	// FAQ Links
+	$this->addFieldMapping('field_service_faq_links','field_service_url_faq');
+	$this->addFieldMapping('field_service_faq_links:title','field_service_url_faq:title');
+	$this->addFieldMapping('field_service_faq_links:attributes','field_service_url_faq:attributes');
+
+	// Support Links
+	$this->addFieldMapping('field_service_support_links','field_service_url_support');
+	$this->addFieldMapping('field_service_support_links:title','field_service_url_support:title');
+	$this->addFieldMapping('field_service_support_links:attributes','field_service_url_support:attributes');
+
+	// Launch Links
+	$this->addFieldMapping('field_service_launch_links','field_service_url_launch');
+	$this->addFieldMapping('field_service_launch_links:title','field_service_url_launch:title');
+	$this->addFieldMapping('field_service_launch_links:attributes','field_service_url_launch:attributes');
+
+    // Order Links
+	$this->addFieldMapping('field_service_order_links','field_service_url_order');
+	$this->addFieldMapping('field_service_order_links:title','field_service_url_order:title');
+	$this->addFieldMapping('field_service_order_links:attributes','field_service_url_order:attributes');
+
+    // Related Links
+	$this->addFieldMapping('field_service_related_links','field_service_url_related');
+	$this->addFieldMapping('field_service_related_links:title','field_service_url_related:title');
+	$this->addFieldMapping('field_service_related_links:attributes','field_service_url_related:attributes');
+
+    // Related Links
+	$this->addFieldMapping('field_service_request_links','field_service_url_request');
+	$this->addFieldMapping('field_service_request_links:title','field_service_url_request:title');
+	$this->addFieldMapping('field_service_request_links:attributes','field_service_url_request:attributes');
+
+    // Download Links
+	$this->addFieldMapping('field_service_download_links','field_service_url_download');
+	$this->addFieldMapping('field_service_download_links:title','field_service_url_download:title');
+	$this->addFieldMapping('field_service_download_links:attributes','field_service_url_download:attributes');
+
+    $this->addFieldMapping('field_service_related_services','field_service_related_services');
 
     // Unmapped destination fields
     $this->addFieldMapping('body:summary', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
@@ -134,6 +175,8 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
 
     // Unmapped source fields
 	$merged_fields = array(
+	  'body',
+	  'teaser',
       'field_service_acq_summary',
       'field_service_acq_details',
 	  'field_service_availableto',
@@ -143,9 +186,23 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
       'field_service_support_summary',
       'field_service_support_details',
       'field_service_cost',
+	  // Features Section
+	  'field_service_features_summary',
+	  'field_service_features_details',
+	  'field_service_tiers',
+	  'field_service_examples_summary',
+	  'field_service_examples_details',
+	  'field_service_notice',
+	  'field_service_side_notice',
     );
 
 	$ignored_fields = array(
+	  // ignoring the terms
+	  '1',
+	  '2',
+	  '3',
+	  '4',
+	  '5',
       // managed by Official Service
       'field_service_operations_owner',
       'field_service_manager',
@@ -162,6 +219,14 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
       'field_service_url_vanity',
 	  'field_service_url_vanity:title',
 	  'field_service_url_vanity:attributes',
+	  // Status Link not used
+	  'field_service_url_status',
+	  'field_service_url_status:title',
+	  'field_service_url_status:attributes',
+	  // Information Links not used in this class
+	  'field_service_url_information',
+	  'field_service_url_information:title',
+	  'field_service_url_information:attributes',
 	  // Parent service not used
 	  'field_service_parent',
 	  // Service Catalog is moved in another class
@@ -190,6 +255,18 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
       'field_service_support_summary:format',
       'field_service_support_details:format',
       'field_service_cost:format',
+	  'field_service_tiers:format',
+	  'field_service_features_summary:format',
+	  'field_service_features_details:format',
+	  'field_service_examples_summary:format',
+	  'field_service_examples_details:format',
+	  'field_service_notice:format',
+	  'field_service_side_notice:format',
+	  'format',
+	  // Concierge not needed on service page
+	  'field_service_concierge',
+	  // Service Department handled by another class
+	  'field_service_department',
     );
 
 	foreach ($ignored_fields as $ignored_field) {
@@ -211,20 +288,30 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
     // Join summary / details fields
     // See: http://drupal.org/node/1012810
     $query->addExpression('CONCAT_WS(\'\',f.field_service_acq_summary_value, f.field_service_acq_details_value)', 'merged_getting_started');
-    $query->addExpression('CONCAT_WS(\'\',f.field_service_features_summary_value, f.field_service_features_details_value)', 'merged_features');
+
+    // Side and Top Notice 
+	// this one sets the example to NULL instaed of ''
+    $query->addExpression('IF( length( CONCAT_WS(\'\',f.field_service_notice_value, f.field_service_side_notice_value)), CONCAT_WS(\'\',f.field_service_notice_value, f.field_service_side_notice_value), NULL)', 'merged_notice');
+
+	// Features Section
+    $query->addExpression('CONCAT_WS(\'\',body, f.field_service_features_summary_value, f.field_service_features_details_value' . ', '
+	  . d6d7_build_expression('Service Tiers', 'f.field_service_tiers_value') . ', '
+	  . d6d7_build_expression('How to Use', 'f.field_service_examples_summary_value', 'f.field_service_examples_details_value') . ')'
+	  , 'merged_features');
+
+	// Service Information Section
     $query->addExpression('CONCAT_WS(\'\',' 
-	  . build_expression('Available To',  'f.field_service_availableto_value') . ', '
-      . build_expression('Requirements',  'f.field_service_requirements_value') . ', '
-	  . build_expression('Data Security', 'f.field_service_security_summary_value', 'f.field_service_security_details_value') . ', '
-	  . build_expression('Support',       'f.field_service_support_summary_value', 'f.field_service_support_details_value') . ', '
-	  . build_expression('Rates',         'f.field_service_cost_value') . ')'
+	  . d6d7_build_expression('Available To',  'f.field_service_availableto_value') . ', '
+      . d6d7_build_expression('Requirements',  'f.field_service_requirements_value') . ', '
+	  . d6d7_build_expression('Data Security', 'f.field_service_security_summary_value', 'f.field_service_security_details_value') . ', '
+	  . d6d7_build_expression('Support',       'f.field_service_support_summary_value', 'f.field_service_support_details_value') . ', '
+	  . d6d7_build_expression('Rates',         'f.field_service_cost_value') . ')'
       , 'merged_service_information');
-//TODO: try concat and contact_ws combinations for the headers since contat will not print anything if one is null above doesn't quite work since concat_ws is returning not null (I guess)
     return $query;
   }
 }
 
-function build_expression($title, $first_field, $second_field = '') {
+function d6d7_build_expression($title, $first_field, $second_field = '') {
   if ($second_field != '') {
     $sub_expression = "CONCAT_WS('',$first_field, $second_field)";
   }
