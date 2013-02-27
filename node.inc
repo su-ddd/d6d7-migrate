@@ -86,6 +86,10 @@ class d6d7OfficialServiceMigration extends d6d7NodeMigration {
     // Map the node ID to the existing ID, but first pass it through the calcID function
     $this->addFieldMapping('nid', 'nid')->callbacks(array($this, 'calcID'));
     $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+    // don't import the path, we want the new IDs since the paths
+    // point to the service pages
+    $this->removeFieldMapping('path');
   }
 
   // This function adds 20000 to the node ID to avoid conflicts since this
