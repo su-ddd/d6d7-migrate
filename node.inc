@@ -21,7 +21,7 @@ class d6d7CatalogEntryMigration extends d6d7NodeMigration {
 
     // map the path (e.g. services/afs) to the url field
 	// other options with field_links are field_links:title, etc.
-    $this->addFieldMapping('field_links', 'path');
+    $this->addFieldMapping('field_catalog_entry_link', 'path');
 
     // setting the format of the body to full_html
 	// had to change the content type to accept user-provided formats
@@ -32,12 +32,17 @@ class d6d7CatalogEntryMigration extends d6d7NodeMigration {
     $this->removeFieldMapping('path');
 
 	// Map the catalog category to this field, and use the tid to make the match
-	$this->addFieldMapping('field_categories', 1);
-    $this->addFieldMapping('field_categories:source_type')->defaultValue('tid');
+	$this->addFieldMapping('field_catalog_entry_categories', 1);
+    $this->addFieldMapping('field_catalog_entry_categories:source_type')->defaultValue('tid');
 
     // Map the node ID to the existing ID, but first pass it through the calcID function
     $this->addFieldMapping('nid', 'nid')->callbacks(array($this, 'calcID'));
     $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+    // Destination fields ignored
+   $this->addFieldMapping('field_catalog_entry_link:title', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+   $this->addFieldMapping('field_catalog_entry_link:attributes', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+   $this->addFieldMapping('field_catalog_entry_link:language', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
   }
 
   // This function adds 10000 to the node ID to avoid conflicts since this
@@ -108,24 +113,24 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
     parent::__construct($arguments);
 
     // Overview
-    $this->addFieldMapping('field_overview', 'field_service_introduction');
-    $this->addFieldMapping('field_overview:format')->defaultValue('full_html');
+    $this->addFieldMapping('field_service_overview', 'field_service_introduction');
+    $this->addFieldMapping('field_service_overview:format')->defaultValue('full_html');
 
     // Body
     $this->addFieldMapping('body', 'merged_features');
     $this->addFieldMapping('body:format')->defaultValue('full_html');
  
     // Getting Started
-    $this->addFieldMapping('field_getting_started', 'merged_getting_started');
-    $this->addFieldMapping('field_getting_started:format')->defaultValue('full_html');
+    $this->addFieldMapping('field_service_getting_started', 'merged_getting_started');
+    $this->addFieldMapping('field_service_getting_started:format')->defaultValue('full_html');
 
 	// Service Information
 	$this->addFieldMapping('field_service_information', 'merged_service_information');
     $this->addFieldMapping('field_service_information:format')->defaultValue('full_html');
 
     // Notice
-	$this->addFieldMapping('field_notice', 'merged_notice');
-    $this->addFieldMapping('field_notice:format')->defaultValue('full_html');
+	$this->addFieldMapping('field_service_notice', 'merged_notice');
+    $this->addFieldMapping('field_service_notice:format')->defaultValue('full_html');
 
     // Create a node with the same ID
     $this->addFieldMapping('nid', 'nid');
@@ -170,8 +175,8 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
 
     // Unmapped destination fields
     $this->addFieldMapping('body:summary', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
-    $this->addFieldMapping('field_overview:language', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
-    $this->addFieldMapping('field_getting_started:language', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+    $this->addFieldMapping('field_service_overview:language', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+    $this->addFieldMapping('field_service_getting_started:language', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
 
     // Unmapped source fields
 	$merged_fields = array(
@@ -318,7 +323,7 @@ function d6d7_build_expression($title, $first_field, $second_field = '') {
   else {
     $sub_expression = $first_field;
   }
-  $expression = "CONCAT('<h2>$title</h2>', IF( length( $sub_expression) , $sub_expression, NULL))";
+  $expression = "CONCAT('<h3>$title</h3>', IF( length( $sub_expression) , $sub_expression, NULL))";
   return $expression;
 }
 
