@@ -40,9 +40,9 @@ class d6d7CatalogEntryMigration extends d6d7NodeMigration {
     $this->addFieldMapping('is_new')->defaultValue('TRUE');
 
     // Destination fields ignored
-   $this->addFieldMapping('field_catalog_entry_link:title', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
-   $this->addFieldMapping('field_catalog_entry_link:attributes', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
-   $this->addFieldMapping('field_catalog_entry_link:language', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+    $this->addFieldMapping('field_catalog_entry_link:title', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+    $this->addFieldMapping('field_catalog_entry_link:attributes', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+    $this->addFieldMapping('field_catalog_entry_link:language', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
   }
 
   // This function adds 10000 to the node ID to avoid conflicts since this
@@ -72,16 +72,16 @@ class d6d7OfficialServiceMigration extends d6d7NodeMigration {
     parent::__construct($arguments);
 
     // Map the IT division - a simple text list
-    $this->addFieldMapping('field_it_services_division', 'field_service_department');
+    $this->addFieldMapping('field_official_division', 'field_service_department');
 
     // Map the various owners
-    $this->addFieldMapping('field_owner',            'field_service_business_owner');
-    $this->addFieldMapping('field_service_owner',    'field_service_technical_owner');
-    $this->addFieldMapping('field_operations_owner', 'field_service_operations_owner');
-    $this->addFieldMapping('field_service_manager',  'field_service_manager');
+    $this->addFieldMapping('field_official_owner',            'field_service_business_owner');
+    $this->addFieldMapping('field_official_service_owner',    'field_service_technical_owner');
+    $this->addFieldMapping('field_official_operations_owner', 'field_service_operations_owner');
+    $this->addFieldMapping('field_official_service_manager',  'field_service_manager');
 
     // TODO: Map the service page
-    $this->addFieldMapping('field_service_page','nid');
+    $this->addFieldMapping('field_official_service_page','nid');
 
     // Map the node ID to the existing ID, but first pass it through the calcID function
     $this->addFieldMapping('nid', 'nid')->callbacks(array($this, 'calcID'));
@@ -110,7 +110,7 @@ class d6d7OfficialServiceMigration extends d6d7NodeMigration {
 }
 
 /**
- * Catalog Entry mappings and handling
+ * Service Page mappings and handling
  */
 class d6d7ServicePageMigration extends d6d7NodeMigration {
   public function __construct(array $arguments) {
@@ -119,22 +119,27 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
     // Overview
     $this->addFieldMapping('field_service_overview', 'field_service_introduction');
     $this->addFieldMapping('field_service_overview:format')->defaultValue('full_html');
+    $this->addFieldMapping('field_service_overview:language')->defaultValue(LANGUAGE_NONE);
 
     // Body
     $this->addFieldMapping('body', 'merged_features');
     $this->addFieldMapping('body:format')->defaultValue('full_html');
+    $this->addFieldMapping('body:language')->defaultValue(LANGUAGE_NONE);
  
     // Getting Started
     $this->addFieldMapping('field_service_getting_started', 'merged_getting_started');
     $this->addFieldMapping('field_service_getting_started:format')->defaultValue('full_html');
+    $this->addFieldMapping('field_service_getting_started:language')->defaultValue(LANGUAGE_NONE);
 
 	// Service Information
 	$this->addFieldMapping('field_service_information', 'merged_service_information');
     $this->addFieldMapping('field_service_information:format')->defaultValue('full_html');
+    $this->addFieldMapping('field_service_information:language')->defaultValue(LANGUAGE_NONE);
 
     // Notice
 	$this->addFieldMapping('field_service_notice', 'merged_notice');
     $this->addFieldMapping('field_service_notice:format')->defaultValue('full_html');
+    $this->addFieldMapping('field_service_notice:language')->defaultValue(LANGUAGE_NONE);
 
     // Create a node with the same ID
     $this->addFieldMapping('nid', 'nid');
@@ -144,43 +149,64 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
 	$this->addFieldMapping('field_service_faq_links','field_service_url_faq');
 	$this->addFieldMapping('field_service_faq_links:title','field_service_url_faq:title');
 	$this->addFieldMapping('field_service_faq_links:attributes','field_service_url_faq:attributes');
+	$this->addFieldMapping('field_service_faq_links:language')->defaultValue(LANGUAGE_NONE);
 
 	// Support Links
 	$this->addFieldMapping('field_service_support_links','field_service_url_support');
 	$this->addFieldMapping('field_service_support_links:title','field_service_url_support:title');
 	$this->addFieldMapping('field_service_support_links:attributes','field_service_url_support:attributes');
+	$this->addFieldMapping('field_service_support_links:language')->defaultValue(LANGUAGE_NONE);
 
 	// Launch Links
 	$this->addFieldMapping('field_service_launch_links','field_service_url_launch');
 	$this->addFieldMapping('field_service_launch_links:title','field_service_url_launch:title');
 	$this->addFieldMapping('field_service_launch_links:attributes','field_service_url_launch:attributes');
+	$this->addFieldMapping('field_service_launch_links:language')->defaultValue(LANGUAGE_NONE);
 
     // Order Links
 	$this->addFieldMapping('field_service_order_links','field_service_url_order');
 	$this->addFieldMapping('field_service_order_links:title','field_service_url_order:title');
 	$this->addFieldMapping('field_service_order_links:attributes','field_service_url_order:attributes');
+	$this->addFieldMapping('field_service_order_links:language')->defaultValue(LANGUAGE_NONE);
 
     // Related Links
 	$this->addFieldMapping('field_service_related_links','field_service_url_related');
 	$this->addFieldMapping('field_service_related_links:title','field_service_url_related:title');
 	$this->addFieldMapping('field_service_related_links:attributes','field_service_url_related:attributes');
+	$this->addFieldMapping('field_service_related_links:language')->defaultValue(LANGUAGE_NONE);
 
     // Related Links
 	$this->addFieldMapping('field_service_request_links','field_service_url_request');
 	$this->addFieldMapping('field_service_request_links:title','field_service_url_request:title');
 	$this->addFieldMapping('field_service_request_links:attributes','field_service_url_request:attributes');
+	$this->addFieldMapping('field_service_request_links:language')->defaultValue(LANGUAGE_NONE);
 
     // Download Links
 	$this->addFieldMapping('field_service_download_links','field_service_url_download');
 	$this->addFieldMapping('field_service_download_links:title','field_service_url_download:title');
 	$this->addFieldMapping('field_service_download_links:attributes','field_service_url_download:attributes');
+	$this->addFieldMapping('field_service_download_links:language')->defaultValue(LANGUAGE_NONE);
 
     $this->addFieldMapping('field_service_related_services','field_service_related_services');
 
+    $this->addFieldMapping('field_service_files', 'field_service_files')->sourceMigration('FileMigration');
+    $this->addFieldMapping('field_service_files:file_class')->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_service_files:preserve_files')->defaultValue(TRUE);
+    $this->addFieldMapping('field_service_files:language')->defaultValue(LANGUAGE_NONE);
+	
+
     // Unmapped destination fields
     $this->addFieldMapping('body:summary', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
-    $this->addFieldMapping('field_service_overview:language', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
-    $this->addFieldMapping('field_service_getting_started:language', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+	// New fields
+    $this->addFieldMapping('field_service_for_it_providers', NULL)->issueGroup(t('DNM'))->description(t('New'));
+    $this->addFieldMapping('field_service_for_it_providers:format', NULL)->issueGroup(t('DNM'))->description(t('New'));
+    $this->addFieldMapping('field_service_for_it_providers:language', NULL)->issueGroup(t('DNM'))->description(t('New'));
+    $this->addFieldMapping('field_service_instructions', NULL)->issueGroup(t('DNM'))->description(t('New'));
+    $this->addFieldMapping('field_service_instructions:format', NULL)->issueGroup(t('DNM'))->description(t('New'));
+    $this->addFieldMapping('field_service_instructions:language', NULL)->issueGroup(t('DNM'))->description(t('New'));
+    $this->addFieldMapping('field_service_other_information', NULL)->issueGroup(t('DNM'))->description(t('New'));
+    $this->addFieldMapping('field_service_other_information:format', NULL)->issueGroup(t('DNM'))->description(t('New'));
+    $this->addFieldMapping('field_service_other_information:language', NULL)->issueGroup(t('DNM'))->description(t('New'));
 
     // Unmapped source fields
 	$merged_fields = array(
@@ -320,6 +346,71 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
   }
 }
 
+/**
+ * Service Page mappings and handling
+ */
+class d6d7ServiceDetailsMigration extends d6d7NodeMigration {
+  public function __construct(array $arguments) {
+    parent::__construct($arguments);
+
+    // Create a node with the same ID
+    $this->addFieldMapping('nid', 'nid');
+    $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+    // Notice
+    $this->addFieldMapping('field_details_notice', 'field_details_notice');
+    $this->addFieldMapping('field_details_notice:format')->defaultValue('full_html');
+    $this->addFieldMapping('field_details_notice:language')->defaultValue(LANGUAGE_NONE);
+
+    // Internal
+    $this->addFieldMapping('field_details_internal', 'field_details_internal');
+    $this->addFieldMapping('field_details_internal:format')->defaultValue('full_html');
+    $this->addFieldMapping('field_details_internal:language')->defaultValue(LANGUAGE_NONE);
+
+	// Body
+    $this->addFieldMapping('body', 'field_details_content');
+    $this->addFieldMapping('body:format')->defaultValue('full_html');
+
+	// Services
+	$this->addFieldMapping('field_details_services', 'field_details_services');
+
+    // Files
+    $this->addFieldMapping('field_details_files', 'field_details_files')->sourceMigration('FileMigration');
+    $this->addFieldMapping('field_details_files:file_class')->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_details_files:preserve_files')->defaultValue(TRUE);
+    $this->addFieldMapping('field_details_files:language')->defaultValue(LANGUAGE_NONE);
+
+    // Images
+    $this->addFieldMapping('field_details_images', 'field_details_images')->sourceMigration('FileMigration');
+    $this->addFieldMapping('field_details_images:alt', 'field_details_images:data')->callbacks(array($this, 'd6d7_get_alt'));;
+    $this->addFieldMapping('field_details_images:file_class')->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_details_images:preserve_files')->defaultValue(TRUE);
+    $this->addFieldMapping('field_details_images:language')->defaultValue(LANGUAGE_NONE);
+  }
+
+  // The value, as passed is an array of serialized arrays, one per image per row
+  // We take the array, unserialize each value and extract the alt string and
+  // setting that as the value for each array item.
+
+  protected function d6d7_get_alt($data) {
+
+    // This will be an array of alt tags (strings)
+    $new_data = array();
+
+    // loop through each value in the data field for the image, in D6, that's a serialized array
+	foreach ($data as $key => $value) {
+	  $value = unserialize($value);
+      if(!empty($value['alt'])) {
+        $new_data[$key] = $value['alt'];
+      }
+      else {
+        $new_data[$key] = '';
+      }
+	}
+    return $new_data;
+  }
+}
+
 function d6d7_build_expression($title, $first_field, $second_field = '') {
   if ($second_field != '') {
     $sub_expression = "CONCAT_WS('',$first_field, $second_field)";
@@ -330,46 +421,3 @@ function d6d7_build_expression($title, $first_field, $second_field = '') {
   $expression = "CONCAT('<h3>$title</h3>', IF( length( $sub_expression) , $sub_expression, NULL))";
   return $expression;
 }
-
-/**
-   * Implementation of Migration::prepareRow().
-   *
-   * Here we pull in additional data from a non-core, non-CCK table.
-   *
-   * @param $row
-   */
-/*
-  public function prepareRow($row) { if (parent::prepareRow($row) === FALSE) { return FALSE; } $image_row = Database::getConnection('default', $this->sourceConnection) ->select('custom_image_table', 'i') ->fields('i', array('copyright', 'filename')) ->condition('vid', $row->vid) ->execute()
-                 ->fetchObject();
-    if ($image_row) {
-      $row->copyright = $image_row->copyright;
-      $row->filename = $image_row->filename;
-    }
-    else {
-      $this->saveMessage(t('No custom_image_table data for image node with vid !vid',
-                         array('!vid' => $row->vid)));
-    }
-  }
-}
-
-class ExampleArticleMigration extends ExampleNodeMigration {
-  public function __construct(array $arguments) {
-    // Add any other data we're pulling into the source row, before the parent
-    // constructor.
-    $this->sourceFields['lead_graphic'] = 'Lead graphic string from D6';
-    $this->sourceFields['summary'] = 'Summary string from D6';
-
-    parent::__construct($arguments);
-
-    $this->addFieldMapping('field_image', 'field_lead_graphic')
-         ->sourceMigration('Image');
-    // Note that we map migrated terms by the vocabulary ID.
-    $this->addFieldMapping('field_countries', '1')
-         ->sourceMigration('Countries')
-         ->arguments(array('source_type' => 'tid'));
-    $this->addFieldMapping('field_topics', '2')
-         ->sourceMigration('Topics')
-         ->arguments(array('source_type' => 'tid'));
-  }
-}
-*/

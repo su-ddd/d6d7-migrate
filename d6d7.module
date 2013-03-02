@@ -124,6 +124,13 @@ function d6d7_register_migrations() {
 	  'source_type' => 'service',
 	  'destination_type' => 'service_page',
     ),
+    array(
+      'class_name' => 'd6d7ServiceDetailsMigration',
+      'description' => t('Migration of Service Details'),
+      'machine_name' => 'ServiceDetails',
+      'source_type' => 'details',
+      'destination_type' => 'service_details',
+    ),
   );
 
   // Tell the node migrations where the users are coming from, so they can
@@ -137,6 +144,22 @@ function d6d7_register_migrations() {
     Migration::registerMigration($arguments['class_name'], $arguments['machine_name'],
                                  $arguments);
   }
+
+  $file_arguments = $common_arguments + array(
+    'machine_name' => 'FileMigration',
+    'description' => t('Import Drupal 6 files'),
+//    'user_migration' => 'd6d7UserMigration',
+    'default_uid' => 1,
+    'source_dir' => '/var/www/prod/sites/default/files',
+    'destination_dir' => 'public://',
+  );
+
+  // NOTE: Had issues with this one because the source didn't have the variable file_directory_path set in the database
+  // This caused the sites/default/files path to be duplicated. The d2d migration class uses file_directory_path
+  // to remove it from the resulting path and if it's not set, it doesn't.
+
+  Migration::registerMigration('DrupalFile6Migration', $file_arguments['machine_name'], $file_arguments);
+
 /*
   // Menu migrations -- same requirements as users
   $menu_arguments = $common_arguments + array(

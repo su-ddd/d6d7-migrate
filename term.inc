@@ -29,7 +29,7 @@ class d6d7CatalogCategoriesMigration extends d6d7TermMigration {
     $vocabs = taxonomy_vocabulary_get_names();
 
     $vid = $vocabs[$this->destination->getBundle()]->vid;
-    $query = $this->query; // $this->termsQuery is set to the $query that I submitted as my source sql
+    //$query = $this->query;
     $query = Database::getConnection('default', 'legacy')
          ->select('term_data', 't')
          ->fields('t', array('tid'))
