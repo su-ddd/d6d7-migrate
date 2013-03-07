@@ -61,6 +61,11 @@ function d6d7_register_migrations() {
       'description' => t('Migration of OperationsOwners'),
       'machine_name' => 'OperationsOwner',
     ),
+    array(
+      'class_name' => 'd6d7UsersWithRolesMigration',
+      'description' => t('Migration of Users with Roles'),
+      'machine_name' => 'User',
+    ),
   );
 
   foreach ($user_arguments as $arguments) {
@@ -125,18 +130,25 @@ function d6d7_register_migrations() {
 	  'destination_type' => 'service_page',
     ),
     array(
-      'class_name' => 'd6d7ServiceDetailsMigration',
-      'description' => t('Migration of Service Details'),
-      'machine_name' => 'ServiceDetails',
+      'class_name' => 'd6d7ServiceInformationMigration',
+      'description' => t('Migration of Service Information Pages (Detail Pages)'),
+      'machine_name' => 'ServiceInformation',
       'source_type' => 'details',
-      'destination_type' => 'service_details',
+      'destination_type' => 'service_information',
+    ),
+    array(
+      'class_name' => 'd6d7TopicMigration',
+      'description' => t('Migration of Topic Pages'),
+      'machine_name' => 'Topic',
+      'source_type' => 'concierge',
+      'destination_type' => 'service_information',
     ),
   );
 
   // Tell the node migrations where the users are coming from, so they can
   // set up the dependency and resolve D6->D7 uids.
   $common_node_arguments = $common_arguments + array(
-//    'user_migration' => 'User',
+    'user_migration' => 'User',
   );
 
   foreach ($node_arguments as $arguments) {

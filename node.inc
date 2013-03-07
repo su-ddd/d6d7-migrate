@@ -16,6 +16,8 @@ class d6d7CatalogEntryMigration extends d6d7NodeMigration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
 
+    $this->addFieldMapping('uid', 'uid');
+
     // map the service catalog content to the body
     $this->addFieldMapping('body', 'field_service_catalog');
 
@@ -71,6 +73,8 @@ class d6d7OfficialServiceMigration extends d6d7NodeMigration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
 
+    $this->addFieldMapping('uid', 'uid');
+
     // Map the IT division - a simple text list
     $this->addFieldMapping('field_official_division', 'field_service_department');
 
@@ -115,6 +119,8 @@ class d6d7OfficialServiceMigration extends d6d7NodeMigration {
 class d6d7ServicePageMigration extends d6d7NodeMigration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
+
+    $this->addFieldMapping('uid', 'uid');
 
     // Overview
     $this->addFieldMapping('field_service_overview', 'field_service_introduction');
@@ -347,45 +353,592 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
 }
 
 /**
- * Service Page mappings and handling
+ * Topic Page mappings and handling
  */
-class d6d7ServiceDetailsMigration extends d6d7NodeMigration {
+class d6d7TopicMigration extends d6d7NodeMigration {
   public function __construct(array $arguments) {
     parent::__construct($arguments);
+
+    $this->addFieldMapping('uid', 'uid');
+
+    // Create a node with the same ID
+    $this->addFieldMapping('nid', 'nid');
+    $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+    $this->addFieldMapping('field_information_services', 'field_concierge_services');
+
+    $this->addFieldMapping('body', 'content');
+    $this->addFieldMapping('body:format')->defaultValue('full_html');
+
+    // Files
+    $this->addFieldMapping('field_information_files', 'field_concierge_files')->sourceMigration('FileMigration');
+    $this->addFieldMapping('field_information_files:file_class')->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_information_files:preserve_files')->defaultValue(TRUE);
+    $this->addFieldMapping('field_information_files:language')->defaultValue(LANGUAGE_NONE);
+
+    // Images
+    // Preserve Images on Rollback
+    $this->addFieldMapping('field_information_images:preserve_files')->defaultValue(TRUE);
+    $this->addFieldMapping('field_information_files:preserve_files')->defaultValue(TRUE);
+    $this->addFieldMapping('field_information_images:file_class')->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_information_images:language')->defaultValue(LANGUAGE_NONE);
+
+    //$this->addFieldMapping('field_information_images:alt', 'field_details_images:data')->callbacks(array($this, 'd6d7_get_alt'));;
+   // $this->addFieldMapping('field_information_images', 'field_concierge_c1_image')->sourceMigration('FileMigration');
+    //$this->addFieldMapping('field_information_images', 'field_concierge_c2_image')->sourceMigration('FileMigration');
+    $this->addFieldMapping('field_information_images', 'all_images')->sourceMigration('FileMigration');
+
+    $this->addUnmigratedDestinations(array(
+      'field_information_images:alt',
+      'field_information_images:title',
+      )
+    );
+    $this->addUnmigratedSources(array(
+      // images are merged together
+      'field_concierge_c1_image',
+      'field_concierge_c1_image:list',
+      'field_concierge_c1_image:data',
+      'field_concierge_c2_image',
+      'field_concierge_c2_image:list',
+      'field_concierge_c2_image:data',
+      'field_concierge_c3_image',
+      'field_concierge_c3_image:list',
+      'field_concierge_c3_image:data',
+      'field_concierge_c4_image',
+      'field_concierge_c4_image:list',
+      'field_concierge_c4_image:data',
+      'field_concierge_c5_image',
+      'field_concierge_c5_image:list',
+      'field_concierge_c5_image:data',
+      'field_concierge_c6_image',
+      'field_concierge_c6_image:list',
+      'field_concierge_c6_image:data',
+      'field_concierge_c7_image',
+      'field_concierge_c7_image:list',
+      'field_concierge_c7_image:data',
+      // Files
+      'field_concierge_files:list',
+      'field_concierge_files:data',
+      // Rest of fields
+      'field_concierge_c7_content',
+      'field_concierge_c7_content:format',
+      'field_concierge_c2_custom',
+      'field_concierge_c2_custom:format',
+      'field_concierge_c3_custom',
+      'field_concierge_c3_custom:format',
+      'field_concierge_c4_custom',
+      'field_concierge_c4_custom:format',
+      'field_concierge_c5_custom',
+      'field_concierge_c5_custom:format',
+      'field_concierge_c6_custom',
+      'field_concierge_c6_custom:format',
+      'field_concierge_c7_custom',
+      'field_concierge_c7_custom:format',
+      // weights (unused)
+      'field_concierge_c1_weight',
+      'field_concierge_c2_weight',
+      'field_concierge_c3_weight',
+      'field_concierge_c4_weight',
+      'field_concierge_c5_weight',
+      'field_concierge_c6_weight',
+      'field_concierge_c7_weight',
+      'field_concierge_l1_weight',
+      'field_concierge_l2_weight',
+      'field_concierge_l3_weight',
+      'field_concierge_l4_weight',
+      'field_concierge_l5_weight',
+      'field_concierge_r1_weight',
+      'field_concierge_r2_weight',
+      'field_concierge_r3_weight',
+      'field_concierge_r4_weight',
+      'field_concierge_r5_weight',
+      // vanity URL
+      'field_concierge_url_vanity',
+      'field_concierge_url_vanity:title',
+      'field_concierge_url_vanity:attributes',
+      // Main and Side Notice (empty)
+      'field_concierge_notice',
+      'field_concierge_notice:format',
+      'field_concierge_side_notice',
+      'field_concierge_side_notice:format',
+      // Service Category
+      'field_concierge_service_category',
+      '1',
+      // Images (not empty, but not used)
+      'field_concierge_images',
+      'field_concierge_images:list',
+      'field_concierge_images:data',
+      // Center #2 parts not used
+      'field_concierge_c1_url',
+      'field_concierge_c1_url:title',
+      'field_concierge_c1_url:attributes',
+      // Center #2 parts not used
+      'field_concierge_c2_url',
+      'field_concierge_c2_url:title',
+      'field_concierge_c2_url:attributes',
+      // Center #3 parts not used
+      'field_concierge_c3_url',
+      'field_concierge_c3_url:title',
+      'field_concierge_c3_url:attributes',
+      // Center #4 parts not used
+      'field_concierge_c4_url',
+      'field_concierge_c4_url:title',
+      'field_concierge_c4_url:attributes',
+      // Center #5 parts not used
+      'field_concierge_c5_url',
+      'field_concierge_c5_url:title',
+      'field_concierge_c5_url:attributes',
+      // Center #6 parts not used
+      'field_concierge_c6_url',
+      'field_concierge_c6_url:title',
+      'field_concierge_c6_url:attributes',
+      // Center #7 (not used)
+      'field_concierge_c7_description',
+      'field_concierge_c7_description:format',
+      'field_concierge_c7_heading',
+      'field_concierge_c7_image',
+      'field_concierge_c7_image:list',
+      'field_concierge_c7_image:data',
+      'field_concierge_c7_url',
+      'field_concierge_c7_url:title',
+      'field_concierge_c7_url:attributes',
+      // Left Field #1 parts not used
+      'field_concierge_l1_custom',
+      'field_concierge_l1_custom:format',
+      'field_concierge_l1_url',
+      'field_concierge_l1_url:title',
+      'field_concierge_l1_url:attributes',
+      // Left Field #2 parts not used
+      'field_concierge_l2_custom',
+      'field_concierge_l2_custom:format',
+      'field_concierge_l2_url',
+      'field_concierge_l2_url:title',
+      'field_concierge_l2_url:attributes',
+      // Left Field #3 parts not used
+      'field_concierge_l3_custom',
+      'field_concierge_l3_custom:format',
+      'field_concierge_l3_url',
+      'field_concierge_l3_url:title',
+      'field_concierge_l3_url:attributes',
+      // Left Field #4 not used
+      'field_concierge_l4_content',
+      // Center #6 parts not used
+      'field_concierge_c6_url',
+      'field_concierge_c6_url:title',
+      'field_concierge_c6_url:attributes',
+      // Center #7 (not used)
+      'field_concierge_c7_description',
+      'field_concierge_c7_description:format',
+      'field_concierge_c7_heading',
+      'field_concierge_c7_image',
+      'field_concierge_c7_image:list',
+      'field_concierge_c7_image:data',
+      'field_concierge_c7_url',
+      'field_concierge_c7_url:title',
+      'field_concierge_c7_url:attributes',
+      // Left Field #1 parts not used
+      'field_concierge_l1_custom',
+      'field_concierge_l1_custom:format',
+      'field_concierge_l1_url',
+      'field_concierge_l1_url:title',
+      'field_concierge_l1_url:attributes',
+      // Left Field #2 parts not used
+      'field_concierge_l2_custom',
+      'field_concierge_l2_custom:format',
+      'field_concierge_l2_url',
+      'field_concierge_l2_url:title',
+      'field_concierge_l2_url:attributes',
+      // Left Field #3 parts not used
+      'field_concierge_l3_custom',
+      'field_concierge_l3_custom:format',
+      'field_concierge_l3_url',
+      'field_concierge_l3_url:title',
+      'field_concierge_l3_url:attributes',
+      // Left Field #4 not used
+      'field_concierge_l4_content',
+      'field_concierge_l4_content:format',
+      'field_concierge_l4_custom',
+      'field_concierge_l4_custom:format',
+      'field_concierge_l4_heading',
+      'field_concierge_l4_icon',
+      'field_concierge_l4_url',
+      'field_concierge_l4_url:title',
+      'field_concierge_l4_url:attributes',
+      // Left Field #5 not used
+      'field_concierge_l5_content',
+      'field_concierge_l5_content:format',
+      'field_concierge_l5_custom',
+      'field_concierge_l5_custom:format',
+      'field_concierge_l5_heading',
+      'field_concierge_l5_icon',
+      'field_concierge_l5_url',
+      'field_concierge_l5_url:title',
+      'field_concierge_l5_url:attributes',
+      // Right Field #1 parts not used
+      'field_concierge_r1_custom',
+      'field_concierge_r1_custom:format',
+      'field_concierge_r1_url',
+      'field_concierge_r1_url:title',   
+      'field_concierge_r1_url:attributes',
+      // Right Field #2 parts not used
+      'field_concierge_r2_custom',
+      'field_concierge_r2_custom:format',
+      'field_concierge_r2_url',
+      'field_concierge_r2_url:title',   
+      'field_concierge_r2_url:attributes',
+      // Right Field #3 parts not used
+      'field_concierge_r3_custom',
+      'field_concierge_r3_custom:format',
+      'field_concierge_r3_url',
+      'field_concierge_r3_url:title',   
+      'field_concierge_r3_url:attributes',
+      // Right Field #4 not used
+      'field_concierge_r4_content',
+      'field_concierge_r4_content:format',
+      'field_concierge_r4_custom',
+      'field_concierge_r4_custom:format',   
+      'field_concierge_r4_heading', 
+      'field_concierge_r4_icon',
+      'field_concierge_r4_url',
+      'field_concierge_r4_url:title',   
+      'field_concierge_r4_url:attributes',
+      // Right Field #5 not used
+      'field_concierge_r5_content',
+      'field_concierge_r5_content:format',
+      'field_concierge_r5_custom',
+      'field_concierge_r5_custom:format',
+      'field_concierge_r5_heading',
+      'field_concierge_r5_icon',
+      'field_concierge_r5_url',
+      'field_concierge_r5_url:title',
+      'field_concierge_r5_url:attributes',
+
+      // Merged
+      'field_concierge_c1_image', 
+      'field_concierge_c2_image', 
+      'field_concierge_c3_image', 
+      'field_concierge_c4_image', 
+      'field_concierge_c5_image', 
+      'field_concierge_c6_image', 
+
+      // Content
+      'field_concierge_c1_custom',
+      'field_concierge_c1_custom:format',
+      'field_concierge_c1_heading',
+      'field_concierge_c1_content',
+      'field_concierge_c1_content:format',
+      'field_concierge_c1_description',
+      'field_concierge_c1_description:format',
+      'field_concierge_c1_image',
+
+      'field_concierge_c2_heading',
+      'field_concierge_c2_content',
+      'field_concierge_c2_content:format',
+      'field_concierge_c2_description',
+      'field_concierge_c2_description:format',
+      'field_concierge_c2_image',
+
+      'field_concierge_c3_heading',
+      'field_concierge_c3_content',
+      'field_concierge_c3_content:format',
+      'field_concierge_c3_description',
+      'field_concierge_c3_description:format',
+      'field_concierge_c3_image',
+
+      'field_concierge_c4_heading',
+      'field_concierge_c4_content',
+      'field_concierge_c4_content:format',
+      'field_concierge_c4_description',
+      'field_concierge_c4_description:format',
+      'field_concierge_c4_image',
+
+      'field_concierge_c5_heading',
+      'field_concierge_c5_content',
+      'field_concierge_c5_content:format',
+      'field_concierge_c5_description',
+      'field_concierge_c5_description:format',
+      'field_concierge_c5_image',
+
+      'field_concierge_c6_heading',
+      'field_concierge_c6_content',
+      'field_concierge_c6_content:format',
+      'field_concierge_c6_description',
+      'field_concierge_c6_description:format',
+      'field_concierge_c6_image',
+
+      'field_concierge_c7_heading',
+      'field_concierge_c7_content',
+      'field_concierge_c7_content:format',
+      'field_concierge_c7_description',
+      'field_concierge_c7_description:format',
+      'field_concierge_c7_image',
+
+      'field_concierge_l1_heading',
+      'field_concierge_l1_content',
+      'field_concierge_l1_content:format',
+      'field_concierge_l1_icon',
+
+      'field_concierge_l2_heading',
+      'field_concierge_l2_content',
+      'field_concierge_l2_content:format',
+      'field_concierge_l2_icon',
+
+      'field_concierge_l3_heading',
+      'field_concierge_l3_content',
+      'field_concierge_l3_content:format',
+      'field_concierge_l3_icon',
+
+      'field_concierge_l4_heading',
+      'field_concierge_l4_content',
+      'field_concierge_l4_icon',
+
+      'field_concierge_l5_heading',
+      'field_concierge_l5_content',
+      'field_concierge_l5_icon',
+
+      'field_concierge_r1_heading',
+      'field_concierge_r1_content',
+      'field_concierge_r1_content:format',
+      'field_concierge_r1_icon',
+      
+      'field_concierge_r2_heading',
+      'field_concierge_r2_content',
+      'field_concierge_r2_content:format',
+      'field_concierge_r2_icon',
+      
+      'field_concierge_r3_heading',
+      'field_concierge_r3_content',
+      'field_concierge_r3_content:format',
+      'field_concierge_r3_icon',
+      
+      'field_concierge_r4_heading',
+      'field_concierge_r4_content',
+      'field_concierge_r4_icon',
+      
+      'field_concierge_r5_heading',
+      'field_concierge_r5_content',
+      'field_concierge_r5_icon',
+      )
+    );
+  }
+
+  public function prepareRow($row) {
+    $row->all_images[] = $row->field_concierge_c1_image;
+    $row->all_images[] = $row->field_concierge_c2_image;
+    $row->all_images[] = $row->field_concierge_c3_image;
+    $row->all_images[] = $row->field_concierge_c4_image;
+    $row->all_images[] = $row->field_concierge_c5_image;
+    $row->all_images[] = $row->field_concierge_c6_image;
+
+    
+    $content .= '<div class="span3">';
+
+    $content .= $this->build_side_card(
+      $row->field_concierge_l1_heading,
+      $row->field_concierge_l1_content,
+      $row->field_concierge_l1_icon
+    );
+    $content .= $this->build_side_card(
+      $row->field_concierge_l2_heading,
+      $row->field_concierge_l2_content,
+      $row->field_concierge_l2_icon
+    );
+    $content .= $this->build_side_card(
+      $row->field_concierge_l3_heading,
+      $row->field_concierge_l3_content,
+      $row->field_concierge_l3_icon
+    );
+    $content .= $this->build_side_card(
+      $row->field_concierge_l4_heading,
+      $row->field_concierge_l4_content,
+      $row->field_concierge_l4_icon
+    );
+    $content .= $this->build_side_card(
+      $row->field_concierge_l5_heading,
+      $row->field_concierge_l5_content,
+      $row->field_concierge_l5_icon
+    );
+    $content .= '</div>';
+
+    $content .= '<div class="span6">';
+    $content .= $row->field_concierge_c1_custom;
+
+    $content .= $this->build_card(
+      $row->field_concierge_c1_heading,
+      $row->field_concierge_c1_content,
+      $row->field_concierge_c1_description,
+      $row->field_concierge_c1_image
+    );
+    $content .= $this->build_card(
+      $row->field_concierge_c2_heading,
+      $row->field_concierge_c2_content,
+      $row->field_concierge_c2_description,
+      $row->field_concierge_c2_image
+    );
+    $content .= $this->build_card(
+      $row->field_concierge_c3_heading,
+      $row->field_concierge_c3_content,
+      $row->field_concierge_c3_description,
+      $row->field_concierge_c3_image
+    );
+    $content .= $this->build_card(
+      $row->field_concierge_c4_heading,
+      $row->field_concierge_c4_content,
+      $row->field_concierge_c4_description,
+      $row->field_concierge_c4_image
+    );
+    $content .= $this->build_card(
+      $row->field_concierge_c5_heading,
+      $row->field_concierge_c5_content,
+      $row->field_concierge_c5_description,
+      $row->field_concierge_c5_image
+    );
+    $content .= $this->build_card(
+      $row->field_concierge_c6_heading,
+      $row->field_concierge_c6_content,
+      $row->field_concierge_c6_description,
+      $row->field_concierge_c6_image
+    );
+    $content .= $this->build_card(
+      $row->field_concierge_c7_heading,
+      $row->field_concierge_c7_content,
+      $row->field_concierge_c7_description,
+      $row->field_concierge_c7_image
+    );
+    $content .= '</div>';
+
+    $content .= '<div class="span3">';
+    
+    $content .= $this->build_side_card(
+      $row->field_concierge_r1_heading,
+      $row->field_concierge_r1_content,
+      $row->field_concierge_r1_icon
+    );
+    $content .= $this->build_side_card(
+      $row->field_concierge_r2_heading,
+      $row->field_concierge_r2_content,
+      $row->field_concierge_r2_icon
+    );
+    $content .= $this->build_side_card(
+      $row->field_concierge_r3_heading,
+      $row->field_concierge_r3_content,
+      $row->field_concierge_r3_icon
+    );
+    $content .= $this->build_side_card(
+      $row->field_concierge_r4_heading,
+      $row->field_concierge_r4_content,
+      $row->field_concierge_r4_icon
+    );
+    $content .= $this->build_side_card(
+      $row->field_concierge_r5_heading,
+      $row->field_concierge_r5_content,
+      $row->field_concierge_r5_icon
+    );
+    $content .= '</div>';
+
+    $row->content = $content;
+  }
+
+  public function build_side_card($heading = '', $content = '', $icon = '') {
+    if (empty($heading)) {
+      return '';
+    }
+    $card = '<div class="box">';
+    if (empty($icon)) {
+      $card .= '<h2>' . $heading . '</h2>' . "\n";
+    }
+    else {
+      $card .= '<h2 class="' . $icon . '">' . $heading . '</h2>' . "\n";
+    }
+    if (!empty($content)) {
+      $card .= $content;
+    }
+    $card .= '</div>';
+    return $card;
+  }
+
+  public function build_card($heading = '', $content = '', $description = '', $image_id = '') {
+    if (empty($heading)) {
+      return '';
+    }
+    $card = '<div class="postcard-left box">';
+    if ($image_id) {
+      $card .= '<div>';
+      $real_file_id = $this->handleSourceMigration(array('FileMigration'), array($image_id));
+      $file = file_load($real_file_id);
+      global $base_url;
+      $base_url = 'http://itservices.stanford.edu';
+      $img = theme_image(array('path' => $file->uri));
+      $card .= $img;
+      $card .= '</div>';
+    }
+    $card .= '<div>';
+    if (!empty($heading)) { 
+	  $card .= '<h2>' . $heading . '</h2>' . "\n";
+    }
+    if (!empty($description)) { 
+	  $card .= $description . "\n";
+    }
+    if (!empty($content)) {
+	  $card .= $content;
+    }
+    $card .= '</div>';
+    $card .= '</div>';
+    return $card;
+  }
+
+  // modify the source query
+  protected function query() {
+    $query = parent::query();
+
+    // Only import published nodes
+    $query->condition('status', '1', '=');
+    return $query;
+  }
+}
+
+/**
+ * Service Page mappings and handling
+ */
+class d6d7ServiceInformationMigration extends d6d7NodeMigration {
+  public function __construct(array $arguments) {
+    parent::__construct($arguments);
+
+    $this->addFieldMapping('uid', 'uid');
 
     // Create a node with the same ID
     $this->addFieldMapping('nid', 'nid');
     $this->addFieldMapping('is_new')->defaultValue('TRUE');
 
     // Notice
-    $this->addFieldMapping('field_details_notice', 'field_details_notice');
-    $this->addFieldMapping('field_details_notice:format')->defaultValue('full_html');
-    $this->addFieldMapping('field_details_notice:language')->defaultValue(LANGUAGE_NONE);
+    $this->addFieldMapping('field_information_notice', 'field_details_notice');
+    $this->addFieldMapping('field_information_notice:format')->defaultValue('full_html');
+    $this->addFieldMapping('field_information_notice:language')->defaultValue(LANGUAGE_NONE);
 
     // Internal
-    $this->addFieldMapping('field_details_internal', 'field_details_internal');
-    $this->addFieldMapping('field_details_internal:format')->defaultValue('full_html');
-    $this->addFieldMapping('field_details_internal:language')->defaultValue(LANGUAGE_NONE);
+    $this->addFieldMapping('field_information_internal', 'field_details_internal');
+    $this->addFieldMapping('field_information_internal:format')->defaultValue('full_html');
+    $this->addFieldMapping('field_information_internal:language')->defaultValue(LANGUAGE_NONE);
 
 	// Body
     $this->addFieldMapping('body', 'field_details_content');
     $this->addFieldMapping('body:format')->defaultValue('full_html');
 
 	// Services
-	$this->addFieldMapping('field_details_services', 'field_details_services');
+	$this->addFieldMapping('field_information_services', 'field_details_services');
 
     // Files
-    $this->addFieldMapping('field_details_files', 'field_details_files')->sourceMigration('FileMigration');
-    $this->addFieldMapping('field_details_files:file_class')->defaultValue('MigrateFileFid');
-    $this->addFieldMapping('field_details_files:preserve_files')->defaultValue(TRUE);
-    $this->addFieldMapping('field_details_files:language')->defaultValue(LANGUAGE_NONE);
+    $this->addFieldMapping('field_information_files', 'field_details_files')->sourceMigration('FileMigration');
+    $this->addFieldMapping('field_information_files:file_class')->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_information_files:preserve_files')->defaultValue(TRUE);
+    $this->addFieldMapping('field_information_files:language')->defaultValue(LANGUAGE_NONE);
 
     // Images
-    $this->addFieldMapping('field_details_images', 'field_details_images')->sourceMigration('FileMigration');
-    $this->addFieldMapping('field_details_images:alt', 'field_details_images:data')->callbacks(array($this, 'd6d7_get_alt'));;
-    $this->addFieldMapping('field_details_images:file_class')->defaultValue('MigrateFileFid');
-    $this->addFieldMapping('field_details_images:preserve_files')->defaultValue(TRUE);
-    $this->addFieldMapping('field_details_images:language')->defaultValue(LANGUAGE_NONE);
+    $this->addFieldMapping('field_information_images', 'field_details_images')->sourceMigration('FileMigration');
+    $this->addFieldMapping('field_information_images:alt', 'field_details_images:data')->callbacks(array($this, 'd6d7_get_alt'));;
+    $this->addFieldMapping('field_information_images:file_class')->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_information_images:preserve_files')->defaultValue(TRUE);
+    $this->addFieldMapping('field_information_images:language')->defaultValue(LANGUAGE_NONE);
   }
 
   // The value, as passed is an array of serialized arrays, one per image per row
@@ -408,6 +961,15 @@ class d6d7ServiceDetailsMigration extends d6d7NodeMigration {
       }
 	}
     return $new_data;
+  }
+
+  // modify the source query
+  protected function query() {
+    $query = parent::query();
+
+    // Only import published nodes
+    $query->condition('status', '1', '=');
+    return $query;
   }
 }
 

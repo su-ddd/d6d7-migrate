@@ -22,6 +22,22 @@ abstract class d6d7UserMigration extends DrupalUser6Migration {
 }
 
 /**
+ * Users with roles
+ */
+class d6d7UsersWithRolesMigration extends d6d7UserMigration {
+  // modify the source query
+  protected function query() {
+    $query = parent::query();
+
+    $query->join('users_roles', 'ur', 'ur.uid = u.uid');
+    $query->condition('u.status', '1', '=');
+    $query->condition('ur.rid', '3', '!=');
+    $query->condition('ur.rid', '5', '!=');
+    return $query;
+  }
+}
+
+/**
  * Business Owners
  */
 class d6d7BusinessOwnerMigration extends d6d7UserMigration {
