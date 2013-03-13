@@ -141,7 +141,7 @@ function d6d7_register_migrations() {
       'description' => t('Migration of Topic Pages'),
       'machine_name' => 'Topic',
       'source_type' => 'concierge',
-      'destination_type' => 'service_information',
+      'destination_type' => 'guide',
     ),
   );
 

@@ -365,35 +365,37 @@ class d6d7TopicMigration extends d6d7NodeMigration {
     $this->addFieldMapping('nid', 'nid');
     $this->addFieldMapping('is_new')->defaultValue('TRUE');
 
-    $this->addFieldMapping('field_information_services', 'field_concierge_services');
+    //  $this->addFieldMapping('field_information_services', 'field_concierge_services');
 
     $this->addFieldMapping('body', 'content');
     $this->addFieldMapping('body:format')->defaultValue('full_html');
 
     // Files
-    $this->addFieldMapping('field_information_files', 'field_concierge_files')->sourceMigration('FileMigration');
-    $this->addFieldMapping('field_information_files:file_class')->defaultValue('MigrateFileFid');
-    $this->addFieldMapping('field_information_files:preserve_files')->defaultValue(TRUE);
-    $this->addFieldMapping('field_information_files:language')->defaultValue(LANGUAGE_NONE);
+    $this->addFieldMapping('field_guide_files', 'field_concierge_files')->sourceMigration('FileMigration');
+    $this->addFieldMapping('field_guide_files:file_class')->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_guide_files:preserve_files')->defaultValue(TRUE);
+    $this->addFieldMapping('field_guide_files:language')->defaultValue(LANGUAGE_NONE);
 
     // Images
     // Preserve Images on Rollback
-    $this->addFieldMapping('field_information_images:preserve_files')->defaultValue(TRUE);
-    $this->addFieldMapping('field_information_files:preserve_files')->defaultValue(TRUE);
-    $this->addFieldMapping('field_information_images:file_class')->defaultValue('MigrateFileFid');
-    $this->addFieldMapping('field_information_images:language')->defaultValue(LANGUAGE_NONE);
+    $this->addFieldMapping('field_guide_images:preserve_files')->defaultValue(TRUE);
+    $this->addFieldMapping('field_guide_files:preserve_files')->defaultValue(TRUE);
+    $this->addFieldMapping('field_guide_images:file_class')->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_guide_images:language')->defaultValue(LANGUAGE_NONE);
 
-    //$this->addFieldMapping('field_information_images:alt', 'field_details_images:data')->callbacks(array($this, 'd6d7_get_alt'));;
-   // $this->addFieldMapping('field_information_images', 'field_concierge_c1_image')->sourceMigration('FileMigration');
-    //$this->addFieldMapping('field_information_images', 'field_concierge_c2_image')->sourceMigration('FileMigration');
-    $this->addFieldMapping('field_information_images', 'all_images')->sourceMigration('FileMigration');
+    //$this->addFieldMapping('field_guide_images:alt', 'field_details_images:data')->callbacks(array($this, 'd6d7_get_alt'));;
+   // $this->addFieldMapping('field_guide_images', 'field_concierge_c1_image')->sourceMigration('FileMigration');
+    //$this->addFieldMapping('field_guide_images', 'field_concierge_c2_image')->sourceMigration('FileMigration');
+    $this->addFieldMapping('field_guide_images', 'all_images')->sourceMigration('FileMigration');
 
     $this->addUnmigratedDestinations(array(
-      'field_information_images:alt',
-      'field_information_images:title',
+      'field_guide_images:alt',
+      'field_guide_images:title',
       )
     );
     $this->addUnmigratedSources(array(
+	  // Leave service relationships out for now
+	  'field_concierge_services',
       // images are merged together
       'field_concierge_c1_image',
       'field_concierge_c1_image:list',
@@ -723,6 +725,9 @@ class d6d7TopicMigration extends d6d7NodeMigration {
   }
 
   public function prepareRow($row) {
+
+    parent::prepareRow($row);
+
     $row->all_images[] = $row->field_concierge_c1_image;
     $row->all_images[] = $row->field_concierge_c2_image;
     $row->all_images[] = $row->field_concierge_c3_image;
