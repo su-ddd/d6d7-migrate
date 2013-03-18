@@ -132,11 +132,6 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
     $this->addFieldMapping('body:format')->defaultValue('full_html');
     $this->addFieldMapping('body:language')->defaultValue(LANGUAGE_NONE);
  
-    // Getting Started
-    $this->addFieldMapping('field_service_getting_started', 'merged_getting_started');
-    $this->addFieldMapping('field_service_getting_started:format')->defaultValue('full_html');
-    $this->addFieldMapping('field_service_getting_started:language')->defaultValue(LANGUAGE_NONE);
-
 	// Service Information
 	$this->addFieldMapping('field_service_information', 'merged_service_information');
     $this->addFieldMapping('field_service_information:format')->defaultValue('full_html');
@@ -210,9 +205,6 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
     $this->addFieldMapping('field_service_instructions', NULL)->issueGroup(t('DNM'))->description(t('New'));
     $this->addFieldMapping('field_service_instructions:format', NULL)->issueGroup(t('DNM'))->description(t('New'));
     $this->addFieldMapping('field_service_instructions:language', NULL)->issueGroup(t('DNM'))->description(t('New'));
-    $this->addFieldMapping('field_service_other_information', NULL)->issueGroup(t('DNM'))->description(t('New'));
-    $this->addFieldMapping('field_service_other_information:format', NULL)->issueGroup(t('DNM'))->description(t('New'));
-    $this->addFieldMapping('field_service_other_information:language', NULL)->issueGroup(t('DNM'))->description(t('New'));
 
     // Unmapped source fields
 	$merged_fields = array(
@@ -328,7 +320,6 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
 
     // Join summary / details fields
     // See: http://drupal.org/node/1012810
-    $query->addExpression('CONCAT_WS(\'\',f.field_service_acq_summary_value, f.field_service_acq_details_value)', 'merged_getting_started');
 
     // Side and Top Notice 
 	// this one sets the example to NULL instaed of ''
@@ -337,7 +328,8 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
 	// Features Section
     $query->addExpression('CONCAT_WS(\'\',body, f.field_service_features_summary_value, f.field_service_features_details_value' . ', '
 	  . d6d7_build_expression('Service Tiers', 'f.field_service_tiers_value') . ', '
-	  . d6d7_build_expression('How to Use', 'f.field_service_examples_summary_value', 'f.field_service_examples_details_value') . ')'
+	  . d6d7_build_expression('How to Use', 'f.field_service_examples_summary_value', 'f.field_service_examples_details_value') . ', '
+      . d6d7_build_expression('Getting Started', 'f.field_service_acq_summary_value', 'f.field_service_acq_details_value') . ')'
 	  , 'merged_features');
 
 	// Service Information Section
