@@ -198,6 +198,8 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
 
     // Unmapped destination fields
     $this->addFieldMapping('body:summary', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+    $this->addFieldMapping('field_service_files:description', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+    $this->addFieldMapping('field_service_files:display', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
 	// New fields
     $this->addFieldMapping('field_service_for_it_providers', NULL)->issueGroup(t('DNM'))->description(t('New'));
     $this->addFieldMapping('field_service_for_it_providers:format', NULL)->issueGroup(t('DNM'))->description(t('New'));
@@ -227,6 +229,8 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
 	  'field_service_examples_details',
 	  'field_service_notice',
 	  'field_service_side_notice',
+	  'field_service_files:list',
+	  'field_service_files:data',
     );
 
 	$ignored_fields = array(
