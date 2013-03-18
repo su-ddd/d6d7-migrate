@@ -10,3 +10,4 @@ dependencies[] = migrate_d2d
 files[] = term.inc
 files[] = node.inc
 files[] = user.inc
+files[] = menu.inc
