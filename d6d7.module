@@ -150,6 +150,34 @@ function d6d7_register_migrations() {
       'source_type' => 'description',
       'destination_type' => 'service_description',
     ),
+    array(
+      'class_name' => 'd6d7MediaMigration',
+      'description' => t('Migration of Media Content Type'),
+      'machine_name' => 'Media',
+      'source_type' => 'media',
+      'destination_type' => 'service_information',
+    ),
+    array(
+      'class_name' => 'd6d7GroupMigration',
+      'description' => t('Migration of Group Content Type'),
+      'machine_name' => 'Group',
+      'source_type' => 'group',
+      'destination_type' => 'page',
+    ),
+    array(
+      'class_name' => 'd6d7OrganizationMigration',
+      'description' => t('Migration of Organization Content Type'),
+      'machine_name' => 'Organization',
+      'source_type' => 'organization',
+      'destination_type' => 'page',
+    ),
+    array(
+      'class_name' => 'd6d7StaticPageMigration',
+      'description' => t('Migration of Static Page Content Type'),
+      'machine_name' => 'Static',
+      'source_type' => 'static',
+      'destination_type' => 'service_information',
+    ),
   );
 
   // Tell the node migrations where the users are coming from, so they can

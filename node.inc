@@ -9,6 +9,140 @@ abstract class d6d7NodeMigration extends DrupalNode6Migration {
   }
 }
 
+
+/**
+ *  Organization Migration
+ */
+class d6d7OrganizationMigration extends d6d7NodeMigration {
+  public function __construct(array $arguments) {
+    parent::__construct($arguments);
+
+    // Map the node ID to the existing ID, but first pass it through the calcID function
+    $this->addFieldMapping('nid', 'nid');
+    $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+    $this->addFieldMapping('uid', 'uid');
+    $this->addFieldMapping('body:format')->defaultValue('full_html');
+    $this->addFieldMapping('field_files', 'field_organization_files')->sourceMigration('FileMigration');
+    $this->addFieldMapping('field_files:file_class')->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_files:preserve_files')->defaultValue(TRUE);
+    $this->addFieldMapping('field_files:language')->defaultValue(LANGUAGE_NONE);
+
+    $this->addUnmigratedSources(array(
+      // Images are not used by this content type
+      'field_organization_images',
+      'field_organization_images:list',
+      'field_organization_images:data',
+      // These fields aren't needed
+      'field_organization_files:list',
+      'field_organization_files:data',
+      // format set to full_html
+      'format',
+    ));
+
+    $this->addUnmigratedDestinations(array(
+      'field_files:description',
+      'field_files:display',
+      'field_old_content_type:source_type',
+      'field_old_content_type:create_term',
+      'field_old_content_type:ignore_case',
+    ));
+
+    $this->addFieldMapping('field_old_content_type')->defaultValue('organization');
+  }
+
+  // modify the source query
+  protected function query() {
+    $query = parent::query();
+
+    // Only import published nodes
+    $query->condition('status', '1', '=');
+    return $query;
+  }
+}
+
+/**
+ *  Group Migration
+ */
+class d6d7GroupMigration extends d6d7NodeMigration {
+  public function __construct(array $arguments) {
+    parent::__construct($arguments);
+
+    // Map the node ID to the existing ID, but first pass it through the calcID function
+    $this->addFieldMapping('nid', 'nid');
+    $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+    $this->addFieldMapping('uid', 'uid');
+    $this->addFieldMapping('body:format')->defaultValue('full_html');
+
+    $this->addUnmigratedSources(array(
+      // Images are not used by this content type
+      'field_group_images',
+      'field_group_images:list',
+      'field_group_images:data',
+      // These fields aren't needed
+      'field_group_files',
+      'field_group_files:list',
+      'field_group_files:data',
+      // format set to full_html
+      'format',
+    ));
+
+    $this->addFieldMapping('field_old_content_type')->defaultValue('group');
+  }
+
+  // modify the source query
+  protected function query() {
+    $query = parent::query();
+
+    // Only import published nodes
+    $query->condition('status', '1', '=');
+    return $query;
+  }
+}
+
+/**
+ *  Media Migration
+ */
+class d6d7MediaMigration extends d6d7NodeMigration {
+  public function __construct(array $arguments) {
+    parent::__construct($arguments);
+
+    // Map the node ID to the existing ID, but first pass it through the calcID function
+    $this->addFieldMapping('nid', 'nid');
+    $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+    $this->addFieldMapping('uid', 'uid');
+
+    $this->addFieldMapping('field_information_files', 'field_media_files');
+    $this->addFieldMapping('body:format')->defaultValue('full_html');
+
+    $this->addFieldMapping('field_old_content_type')->defaultValue('media');
+
+    $this->addUnmigratedSources(array(
+      // Images are not used by this content type
+      'field_media_images',
+      'field_media_images:list',
+      'field_media_images:data',
+      // These fields aren't needed
+      'field_media_files:list',
+      'field_media_files:data',
+      // format set to full_html
+      'format',
+    ));
+
+  }
+
+  // modify the source query
+  protected function query() {
+    $query = parent::query();
+
+    // Only import published nodes
+    $query->condition('status', '1', '=');
+    return $query;
+  }
+}
+
 /**
  *  Service Description Migration
  */
