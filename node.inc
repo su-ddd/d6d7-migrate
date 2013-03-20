@@ -10,6 +10,50 @@ abstract class d6d7NodeMigration extends DrupalNode6Migration {
 }
 
 /**
+ *  Service Description Migration
+ */
+class d6d7DescriptionMigration extends d6d7NodeMigration {
+  public function __construct(array $arguments) {
+    parent::__construct($arguments);
+
+    // Map the node ID to the existing ID, but first pass it through the calcID function
+    $this->addFieldMapping('nid', 'nid');
+    $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+    $this->addFieldMapping('uid', 'uid');
+    $this->addFieldMapping('field_description_service', 'field_description_services')->callbacks(array($this, 'calcID'));
+	
+	$fields = array(
+	  'field_description_overview',
+	  'field_description_documentation',
+	  'field_description_installation',
+	  'field_description_monitoring',
+	  'field_description_planning',
+	  'field_description_responsibility',
+	  'field_description_security',
+	  'field_description_support'
+	);
+
+	$this->addSimpleMappings($fields);
+
+	foreach ($fields as $field) {
+	  $this->addFieldMapping($field . ':format')->defaultValue('full_html');
+	  $this->addFieldMapping(NULL, $field . ':format')->issueGroup(t('DNM'))->description(t('Ignored'));
+	}
+
+	foreach ($fields as $field) {
+	  $this->addFieldMapping($field . ':language', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+    }
+
+  }
+
+  protected function calcID($value) {
+    $value = $value + 20000;
+    return $value;
+  }
+}
+
+/**
  * Catalog Entry mappings and handling
  */
 class d6d7CatalogEntryMigration extends d6d7NodeMigration {

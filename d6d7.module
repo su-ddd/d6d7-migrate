@@ -143,6 +143,13 @@ function d6d7_register_migrations() {
       'source_type' => 'concierge',
       'destination_type' => 'guide',
     ),
+    array(
+      'class_name' => 'd6d7DescriptionMigration',
+      'description' => t('Migration of Service Descriptions'),
+      'machine_name' => 'Description',
+      'source_type' => 'description',
+      'destination_type' => 'service_description',
+    ),
   );
 
   // Tell the node migrations where the users are coming from, so they can
