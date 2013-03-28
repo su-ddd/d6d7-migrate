@@ -9,6 +9,183 @@ abstract class d6d7NodeMigration extends DrupalNode6Migration {
   }
 }
 
+/**
+ *  Technology Strategy
+ */
+
+class d6d7TechStrategyMigration extends d6d7NodeMigration {
+  public function __construct(array $arguments) {
+    parent::__construct($arguments);
+
+    // Map the node ID to the existing ID, but first pass it through the calcID function
+    $this->addFieldMapping('nid', 'nid');
+    $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+    $this->addFieldMapping('uid', 'uid');
+
+    // Body
+    $this->addFieldMapping('body', 'merged_strategy');
+    $this->addFieldMapping('body:format')->defaultValue('full_html');
+    $this->addFieldMapping('body:language')->defaultValue(LANGUAGE_NONE);
+
+    $this->addFieldMapping('field_old_content_type')->defaultValue('techstrategy');
+    $this->addFieldMapping('field_old_content_type:create_term')->defaultValue('TRUE');
+
+    $this->addFieldMapping('field_services', 'field_techstrategy_services');
+    $this->addFieldMapping('field_related_pages', 'field_techstrategy_strategies');
+
+    $this->addUnmigratedSources(array(
+      'field_techstrategy_toc',
+      'format',
+      'field_techstrategy_vision',
+      'field_techstrategy_vision:format',
+      'field_techstrategy_overview',
+      'field_techstrategy_overview:format',
+      'field_techstrategy_currentstate',
+      'field_techstrategy_currentstate:format',
+      'field_techstrategy_images',
+      'field_techstrategy_images:list',
+      'field_techstrategy_images:data',
+      'body',
+    ));
+
+    $this->addUnmigratedDestinations(array(
+      'field_files',
+      'field_files:file_class',
+      'field_files:language',
+      'field_files:preserve_files',
+      'field_files:destination_dir',
+      'field_files:destination_file',
+      'field_files:file_replace',
+      'field_files:source_dir',
+      'field_files:description',
+      'field_files:display',
+      'field_old_content_type:source_type',
+      'field_old_content_type:ignore_case',
+    ));
+  }
+
+  // modify the source query
+  protected function query() {
+    $query = parent::query();
+
+    // Only import published nodes
+    $query->condition('status', '1', '=');
+
+    // Body
+    $query->addExpression('CONCAT_WS(\'\','
+      . d6d7_build_expression('Overview',      'f.field_techstrategy_overview_value',     '', 'h2') . ', '
+      . d6d7_build_expression('Current State', 'f.field_techstrategy_currentstate_value', '', 'h2') . ', '
+      . d6d7_build_expression('Vision',        'f.field_techstrategy_vision_value',       '', 'h2') . ')'
+      , 'merged_strategy');
+    return $query;
+  }
+}
+
+/**
+ *  Technology Strategy Category
+ */
+
+class d6d7TechStrategyCategoryMigration extends d6d7NodeMigration {
+  public function __construct(array $arguments) {
+    parent::__construct($arguments);
+
+    // Map the node ID to the existing ID, but first pass it through the calcID function
+    $this->addFieldMapping('nid', 'nid');
+    $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+    $this->addFieldMapping('uid', 'uid');
+    $this->addFieldMapping('body:format')->defaultValue('full_html');
+
+    $this->addFieldMapping('field_old_content_type')->defaultValue('techstrategycat');
+    $this->addFieldMapping('field_old_content_type:create_term')->defaultValue('TRUE');
+
+    $this->addUnmigratedSources(array(
+      'format',
+    ));
+
+    $this->addUnmigratedDestinations(array(
+      'field_files',
+      'field_files:file_class',
+      'field_files:language',
+      'field_files:preserve_files',
+      'field_files:destination_dir',
+      'field_files:destination_file',
+      'field_files:file_replace',
+      'field_files:source_dir',
+      'field_files:description',
+      'field_files:display',
+      'field_old_content_type:source_type',
+      'field_old_content_type:ignore_case',
+    ));
+  }
+
+  // modify the source query
+  protected function query() {
+    $query = parent::query();
+
+    // Only import published nodes
+    $query->condition('status', '1', '=');
+    return $query;
+  }
+}
+
+/**
+ *  Static Page
+ */
+
+class d6d7StaticPageMigration extends d6d7NodeMigration {
+  public function __construct(array $arguments) {
+    parent::__construct($arguments);
+
+    // Map the node ID to the existing ID, but first pass it through the calcID function
+    $this->addFieldMapping('nid', 'nid');
+    $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+    $this->addFieldMapping('uid', 'uid');
+    $this->addFieldMapping('body:format')->defaultValue('full_html');
+
+    $this->addFieldMapping('field_old_content_type')->defaultValue('static');
+    $this->addFieldMapping('field_old_content_type:create_term')->defaultValue('TRUE');
+
+    $this->addUnmigratedSources(array(
+      'field_static_code',
+      'field_static_code:format',
+      'field_static_files',
+      'field_static_files:list',
+      'field_static_files:data',
+      'field_static_images',
+      'field_static_images:list',
+      'field_static_images:data',
+      'field_static_internal',
+      'field_static_internal:format',
+      'field_static_notice',
+      'field_static_notice:format',
+      'format',
+    ));
+  }
+
+  // modify the source query
+  protected function query() {
+    $query = parent::query();
+
+    // Only import published nodes
+    $query->condition('status', '1', '=');
+    // home page
+    $query->condition('n.nid', '1079', '!=');
+    // services
+    $query->condition('n.nid', '3600', '!=');
+    // service owners view
+    $query->condition('n.nid', '3132', '!=');
+    // status definitions
+    $query->condition('n.nid', '2711', '!=');
+    // 404 and 403 pages
+    $query->condition('n.nid', '2205', '!=');
+    $query->condition('n.nid', '2207', '!=');
+    return $query;
+  }
+}
+
 
 /**
  *  Organization Migration
@@ -44,7 +221,6 @@ class d6d7OrganizationMigration extends d6d7NodeMigration {
       'field_files:description',
       'field_files:display',
       'field_old_content_type:source_type',
-      'field_old_content_type:create_term',
       'field_old_content_type:ignore_case',
     ));
 
@@ -89,6 +265,7 @@ class d6d7GroupMigration extends d6d7NodeMigration {
     ));
 
     $this->addFieldMapping('field_old_content_type')->defaultValue('group');
+    $this->addFieldMapping('field_old_content_type:create_term')->defaultValue('TRUE');
   }
 
   // modify the source query
@@ -118,6 +295,7 @@ class d6d7MediaMigration extends d6d7NodeMigration {
     $this->addFieldMapping('body:format')->defaultValue('full_html');
 
     $this->addFieldMapping('field_old_content_type')->defaultValue('media');
+    $this->addFieldMapping('field_old_content_type:create_term')->defaultValue('TRUE');
 
     $this->addUnmigratedSources(array(
       // Images are not used by this content type
@@ -219,6 +397,9 @@ class d6d7CatalogEntryMigration extends d6d7NodeMigration {
     $this->addFieldMapping('nid', 'nid')->callbacks(array($this, 'calcID'));
     $this->addFieldMapping('is_new')->defaultValue('TRUE');
 
+    // Set the Service Provider to IT Services
+	$this->addFieldMapping('field_catalog_service_provider')->defaultValue('Information Technology Services');
+
     // Destination fields ignored
     $this->addFieldMapping('field_catalog_entry_link:title', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
     $this->addFieldMapping('field_catalog_entry_link:attributes', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
@@ -246,6 +427,79 @@ class d6d7CatalogEntryMigration extends d6d7NodeMigration {
 
 /**
  * Catalog Entry mappings and handling
+ */
+
+class d6d7OtherProviderCatalogEntryMigration extends d6d7NodeMigration {
+  public function __construct(array $arguments) {
+    parent::__construct($arguments);
+
+    $this->addFieldMapping('uid', 'uid');
+
+    // map the service catalog content to the body
+    $this->addFieldMapping('body', 'field_otherservice_catalog');
+
+    // setting the format of the body to full_html
+    // had to change the content type to accept user-provided formats
+    $this->addFieldMapping('body:format')->defaultValue('full_html');
+
+    // don't import the path, we want the new IDs since the paths
+    // point to the service pages
+    $this->removeFieldMapping('path');
+
+    // Map the catalog category to this field, and use the tid to make the match
+    $this->addFieldMapping('field_catalog_entry_categories', 1);
+    $this->addFieldMapping('field_catalog_entry_categories:source_type')->defaultValue('tid');
+
+    // Map the service provider to this field, and use the tid to make the match
+    $this->addFieldMapping('field_catalog_service_provider', 3);
+    $this->addFieldMapping('field_catalog_service_provider:source_type')->defaultValue('tid');
+
+    // Links
+    $this->addFieldMapping('field_catalog_entry_link', 'field_otherservice_url');
+    $this->addFieldMapping('field_catalog_entry_link:title', 'field_otherservice_url:title');
+
+    $this->addUnmigratedDestinations(array(
+      'field_catalog_entry_categories:create_term',
+      'field_catalog_entry_categories:ignore_case',
+      'field_catalog_service_provider:create_term',
+      'field_catalog_service_provider:ignore_case',
+      'field_catalog_entry_link:attributes',
+      'field_catalog_entry_link:language',
+      'path',
+    ));
+
+    $this->addUnmigratedSources(array(
+      'field_otherservice_catalog:format',
+      'path',
+      '2',
+      'field_otherservice_url:attributes',
+      '5',
+      'body',
+      '4',
+      'format',
+    ));
+
+
+    // Set the Service Provider to IT Services
+//    $this->addFieldMapping('field_catalog_service_provider')->defaultValue('Information Technology Services');
+
+    // Destination fields ignored
+//    $this->addFieldMapping('field_catalog_entry_link:title', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+//    $this->addFieldMapping('field_catalog_entry_link:attributes', NULL)->issueGroup(t('DNM'))->description(t('Ignored'));
+  }
+
+  // modify the source query
+  protected function query() {
+    $query = parent::query();
+
+    // Only import published nodes
+    $query->condition('status', '1', '=');
+    return $query;
+  }
+}
+
+/**
+ * Official Service mappings and handling
  */
 class d6d7OfficialServiceMigration extends d6d7NodeMigration {
   public function __construct(array $arguments) {
@@ -1152,13 +1406,13 @@ class d6d7ServiceInformationMigration extends d6d7NodeMigration {
   }
 }
 
-function d6d7_build_expression($title, $first_field, $second_field = '') {
+function d6d7_build_expression($title, $first_field, $second_field = '', $heading = 'h3') {
   if ($second_field != '') {
     $sub_expression = "CONCAT_WS('',$first_field, $second_field)";
   }
   else {
     $sub_expression = $first_field;
   }
-  $expression = "CONCAT('<h3>$title</h3>', IF( length( $sub_expression) , $sub_expression, NULL))";
+  $expression = "CONCAT('<$heading>$title</$heading>', IF( length( $sub_expression) , $sub_expression, NULL))";
   return $expression;
 }
