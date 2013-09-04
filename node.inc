@@ -10,6 +10,148 @@ abstract class d6d7NodeMigration extends DrupalNode6Migration {
 }
 
 /**
+ *  Agreements
+ */
+
+class d6d7AgreementsMigration extends d6d7NodeMigration {
+  public function __construct(array $arguments) {
+    parent::__construct($arguments);
+
+    // Map the node ID to the existing ID, but first pass it through the calcID function
+    $this->addFieldMapping('nid', 'nid');
+    $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+    $this->addFieldMapping('uid', 'uid');
+    $this->addFieldMapping('field_agreement_calendar', 'field_sla_calendar');
+    $this->addFieldMapping('field_agreement_calendar:format')->defaultValue('full_html');
+    $this->addFieldMapping('field_agreement_calendar:language')->defaultValue(LANGUAGE_NONE);
+
+    $this->addFieldMapping('field_agreement_contact', 'field_sla_contact');
+    $this->addFieldMapping('field_agreement_contact:format')->defaultValue('full_html');
+    $this->addFieldMapping('field_agreement_contact:language')->defaultValue(LANGUAGE_NONE);
+
+    $this->addFieldMapping('field_agreement_exceptions', 'field_sla_exceptions');
+    $this->addFieldMapping('field_agreement_exceptions:format')->defaultValue('full_html');
+    $this->addFieldMapping('field_agreement_exceptions:language')->defaultValue(LANGUAGE_NONE);
+
+    $this->addFieldMapping('field_agreement_add_services', 'field_sla_additional_services');
+    $this->addFieldMapping('field_agreement_add_services:format')->defaultValue('full_html');
+    $this->addFieldMapping('field_agreement_add_services:language')->defaultValue(LANGUAGE_NONE);
+
+    $this->addFieldMapping('field_agreement_services', 'field_sla_services')->callbacks(array($this, 'calcID'));
+
+    $this->addUnmigratedSources(array(
+      'field_sla_calendar:format',
+      'field_sla_contact:format',
+      'field_sla_exceptions:format',
+      'field_sla_additional_services:format',
+    ));
+  }
+
+  // This function adds 20000 to the node ID
+  // The Official Service IDs have the old service IDs + 20000
+  protected function calcID($data) {
+
+    // This will be an array of IDs
+    $new_data = array();
+
+    foreach ($data as $key => $value) {
+      if ($value) {
+        $value = $value + 20000;
+      }
+      $new_data[$key] = $value;
+    }
+    return $new_data;
+  }
+}
+
+/**
+ *  Announcements
+ */
+
+class d6d7AnnouncementsMigration extends d6d7NodeMigration {
+  public function __construct(array $arguments) {
+    parent::__construct($arguments);
+
+    // Map the node ID to the existing ID
+    $this->addFieldMapping('nid', 'nid');
+    $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+    $this->addFieldMapping('uid', 'uid');
+    $this->addFieldMapping('field_date', 'field_news_date');
+    $this->addFieldMapping('body:format')->defaultValue('full_html');
+    $this->addFieldMapping('body:language')->defaultValue(LANGUAGE_NONE);
+
+    $this->addUnmigratedSources(array(
+      'field_news_concierge',
+      'field_news_images',
+      'field_news_images:list',
+      'field_news_images:data',
+      'field_news_services',
+      'field_news_location',
+      'format',
+    ));
+  }
+
+
+  // modify the source query
+  protected function query() {
+    $query = parent::query();
+
+    // Only import published nodes
+    $query->condition('status', '1', '=');
+    $query->join('content_field_news_location', 'loc', 'n.vid = loc.vid');
+    $query->condition('status', '1', '=');
+    $query->condition('loc.field_news_location_value', 'IT Services Home Page', '=');
+
+    return $query;
+  }
+}
+
+/**
+ *  HelpSU News
+ */
+
+class d6d7NewsMigration extends d6d7NodeMigration {
+  public function __construct(array $arguments) {
+    parent::__construct($arguments);
+
+    // Map the node ID to the existing ID, but first pass it through the calcID function
+    $this->addFieldMapping('nid', 'nid');
+    $this->addFieldMapping('is_new')->defaultValue('TRUE');
+
+    $this->addFieldMapping('uid', 'uid');
+    $this->addFieldMapping('field_date', 'field_news_date');
+    $this->addFieldMapping('body:format')->defaultValue('full_html');
+    $this->addFieldMapping('body:language')->defaultValue(LANGUAGE_NONE);
+
+    $this->addUnmigratedSources(array(
+      'field_news_concierge',
+      'field_news_images',
+      'field_news_images:list',
+      'field_news_images:data',
+      'field_news_services',
+      'field_news_location',
+      'format',
+    ));
+  }
+
+
+  // modify the source query
+  protected function query() {
+    $query = parent::query();
+
+    // Only import published nodes
+    $query->condition('status', '1', '=');
+    $query->join('content_field_news_location', 'loc', 'n.vid = loc.vid');
+    $query->condition('status', '1', '=');
+    $query->condition('loc.field_news_location_value', 'HelpSU', '=');
+
+    return $query;
+  }
+}
+ 
+/**
  *  Technology Strategy
  */
 
@@ -516,8 +658,8 @@ class d6d7OfficialServiceMigration extends d6d7NodeMigration {
     $this->addFieldMapping('field_official_operations_owner', 'field_service_operations_owner');
     $this->addFieldMapping('field_official_service_manager',  'field_service_manager');
 
-    // TODO: Map the service page
-    $this->addFieldMapping('field_official_service_page','nid');
+    // Map the service page
+    $this->addFieldMapping('field_service','nid');
 
     // Map the node ID to the existing ID, but first pass it through the calcID function
     $this->addFieldMapping('nid', 'nid')->callbacks(array($this, 'calcID'));
@@ -620,7 +762,7 @@ class d6d7ServicePageMigration extends d6d7NodeMigration {
 	$this->addFieldMapping('field_service_download_links:attributes','field_service_url_download:attributes');
 	$this->addFieldMapping('field_service_download_links:language')->defaultValue(LANGUAGE_NONE);
 
-    $this->addFieldMapping('field_service_related_services','field_service_related_services');
+    $this->addFieldMapping('field_services','field_service_related_services');
 
     $this->addFieldMapping('field_service_files', 'field_service_files')->sourceMigration('FileMigration');
     $this->addFieldMapping('field_service_files:file_class')->defaultValue('MigrateFileFid');
@@ -1358,7 +1500,7 @@ class d6d7ServiceInformationMigration extends d6d7NodeMigration {
     $this->addFieldMapping('body:format')->defaultValue('full_html');
 
 	// Services
-	$this->addFieldMapping('field_information_services', 'field_details_services');
+	$this->addFieldMapping('field_service', 'field_details_services');
 
     // Files
     $this->addFieldMapping('field_information_files', 'field_details_files')->sourceMigration('FileMigration');

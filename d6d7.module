@@ -198,12 +198,33 @@ function d6d7_register_migrations() {
       'source_type' => 'techstrategy',
       'destination_type' => 'page',
     ),
+    array(
+      'class_name' => 'd6d7NewsMigration',
+      'description' => t('Migration of HelpSU News'),
+      'machine_name' => 'News',
+      'source_type' => 'news',
+      'destination_type' => 'helpsu_news',
+    ),
+    array(
+      'class_name' => 'd6d7AnnouncementsMigration',
+      'description' => t('Migration of Announcements'),
+      'machine_name' => 'Announcements',
+      'source_type' => 'news',
+      'destination_type' => 'announcement',
+    ),
+    array(
+      'class_name' => 'd6d7AgreementsMigration',
+      'description' => t('Migration of Agreements'),
+      'machine_name' => 'Agreements',
+      'source_type' => 'sla',
+      'destination_type' => 'agreement',
+    ),
   );
 
   // Tell the node migrations where the users are coming from, so they can
   // set up the dependency and resolve D6->D7 uids.
   $common_node_arguments = $common_arguments + array(
-    'user_migration' => 'User',
+//    'user_migration' => 'User',
   );
 
   foreach ($node_arguments as $arguments) {
